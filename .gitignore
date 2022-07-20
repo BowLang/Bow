@@ -1,0 +1,7 @@
+.idea/
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+Bow/test.bow
