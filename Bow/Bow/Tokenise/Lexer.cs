@@ -23,6 +23,8 @@ public class Lexer
             ScanToken();
         }
         
+        _tokens.Add(new Token(TokenType.EOF, "", "\0", _line));
+        
         return _tokens;
     }
 
@@ -36,7 +38,7 @@ public class Lexer
                 AddToken(TokenType.Plus);
                 break;
             case '-':
-                AddToken(TokenType.Minus);
+                Minus();
                 break;
             case '*':
                 AddToken(TokenType.Star);
@@ -50,16 +52,26 @@ public class Lexer
             case '\'': case '"':
                 Str();
                 break;
+            case '<':
+                LessThan();
+                break;
             case ' ': case '\r': case '\t':
                 break;
             case '\n':
-                Console.WriteLine(_line);
                 _line++;
                 break;
             default:
                 if (Char.IsDigit(C))
                 {
                     Dec();
+                }
+                else if (Char.IsLetter(C))
+                {
+                    Identifier();
+                }
+                else
+                {
+                    throw new BowSyntaxError($"Unrecognised character {C} on line {_line}");
                 }
                 break;
         }
@@ -93,6 +105,51 @@ public class Lexer
         return _current + 1 > _code.Length ? '\0' : _code[_current + 1];
     }
 
+    private void Minus()
+    {
+        if (Peek() == '<')
+        {
+            Advance();
+            AddToken(TokenType.CloseDeclare);
+        }
+        else
+        {
+            AddToken(TokenType.Minus);
+        }
+    }
+
+    private void LessThan()
+    {
+        if (Peek() == '-')
+        {
+            Advance();
+            LeftSingleArrow();
+        }
+    }
+    
+    private void LeftSingleArrow()
+    {
+        if (PeekNext() == '<')
+        {
+            Assign();
+        }
+        else
+        {
+            Declare();
+        }
+    }
+
+    private void Assign()
+    {
+        Advance();
+        AddToken(TokenType.Assign);
+    }
+    
+    private void Declare()
+    {
+        AddToken(TokenType.OpenDeclare);
+    }
+
     private void Str()
     {
         char type = _code[_current - 1];
@@ -115,7 +172,7 @@ public class Lexer
         Advance();
 
         string value = _code[(_start + 1)..(_current - 1)];
-        AddToken(TokenType.Str, value);
+        AddToken(TokenType.StrLiteral, value);
     }
 
     private void Dec()
@@ -135,6 +192,25 @@ public class Lexer
             }
         }
         
-        AddToken(TokenType.Dec, _code[_start.._current]);
+        AddToken(TokenType.DecLiteral, _code[_start.._current]);
+    }
+
+    private void Identifier()
+    {
+        while (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+        {
+            Advance();
+        }
+        
+        string identifier = _code[_start.._current];
+
+        if (Keywords.Contains(identifier))
+        {
+            AddToken(Keywords.GetTokenType(identifier), identifier);
+        }
+        else
+        {
+            AddToken(TokenType.Identifier, identifier);
+        }
     }
 }
