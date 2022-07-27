@@ -12,13 +12,13 @@ public class Bow
     private readonly string _code;
     private readonly bool _debug;
     
-    public Bow(string fileName, bool debug=false)
+    public Bow(string fileName, bool shell=false, bool debug=false)
     {
-        _code = String.Join("\n", File.ReadAllLines(fileName));
+        _code = shell ? fileName : String.Join("\n", File.ReadAllLines(fileName));
         _debug = debug;
     }
     
-    public void Run()
+    public void Run(bool inShell=false)
     {
         try
         {
@@ -32,7 +32,7 @@ public class Bow
             }
 
             List<Statement> statements = new Parser(tokens).Parse();
-            new Interpreter(statements).Interpret();
+            new Interpreter(statements).Interpret(inShell);
         }
         catch (BowSyntaxError ex)
         {
@@ -42,12 +42,35 @@ public class Bow
         {
             Console.WriteLine($"\x1B[91mBow Type Error: {(_debug ? ex : ex.Message)}\x1B[0m");
         }
+        catch (BowNameError ex)
+        {
+            Console.WriteLine($"\x1B[91mBow Name Error: {(_debug ? ex : ex.Message)}\x1B[0m");
+        }
         finally
         {
             if (_debug)
             {
                 Env.OutputVariables();
             }
+        }
+    }
+
+    public static void RunShell()
+    {
+        Console.WriteLine("\x1B[1;4mBow Interactive Shell\x1B[0m\n");
+        
+        while (true)
+        {
+            Console.Write("\x1B[92mbow>\x1B[0m ");
+            string? line = Console.ReadLine();
+            line ??= "";
+            
+            if (line == "exit")
+            {
+                break;
+            }
+            
+            new Bow(line, true).Run(true);
         }
     }
 }

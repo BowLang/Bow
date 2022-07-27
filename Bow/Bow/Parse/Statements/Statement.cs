@@ -8,4 +8,9 @@ public class Statement
     {
         throw new NotImplementedException();
     }
+
+    public virtual string Interpret(bool lastInShell)
+    {
+        throw new NotImplementedException();
+    }
 }
