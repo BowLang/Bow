@@ -1,9 +1,21 @@
-﻿namespace Parse.Expressions.Literals;
+﻿using Tokenise;
+namespace Parse.Expressions.Literals;
 
 public class Literal
 {
     public dynamic Value { get; init; } = "";
     public string Type { get; init; } = "";
 
-    public string StrValue => Value.ToString();
+    public string DisplayValue
+    {
+        get
+        {
+            if (Type == TokenType.StrLiteral)
+            {
+                return $"\"{Value}\"";
+            }
+            
+            return Value.ToString();
+        }
+    } 
 }

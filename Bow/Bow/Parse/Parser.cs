@@ -67,6 +67,14 @@ public class Parser
         throw new BowRuntimeError("Cannot call Previous() on the first token");
     }
 
+    private void Undo()
+    {
+        if (_current > 0)
+        {
+            _current--;
+        }
+    }
+
     private bool IsAtEnd()
     {
         return Peek().Type == TokenType.EOF;
@@ -84,9 +92,13 @@ public class Parser
             {
                 return DeclareStatement(name, Previous().Line);
             }
-            
-            throw new BowSyntaxError(
-                $"Unexpected {Peek().Type} ('{Peek().Lexeme}') after identifier on line {Previous().Line}");
+
+            return LiteralStatement(Previous().Line);
+        }
+        
+        if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral }))
+        {
+            return LiteralStatement(Previous().Line);
         }
 
         Advance();
@@ -136,6 +148,15 @@ public class Parser
         }
 
         return (type, isConstant);
+    }
+    
+    private Statement LiteralStatement(int line)
+    {
+        Undo();
+        
+        Expression valueExpression = GetExpression(line);
+
+        return new LitStatement(valueExpression, line);
     }
 
     // Expressions

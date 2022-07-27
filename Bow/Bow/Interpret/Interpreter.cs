@@ -11,11 +11,13 @@ public class Interpreter
         _statements = statements;
     }
     
-    public void Interpret()
+    public void Interpret(bool inShell=false)
     {
-        foreach (var statement in _statements)
+        foreach (var statement in _statements.SkipLast(1))
         {
             statement.Interpret();
         }
+        
+        Console.WriteLine($"\x1B[95m> \x1B[93m{_statements.Last().Interpret(inShell)}\x1B[0m");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Errors;
+using Tokenise;
 using Parse.Environment;
 using Parse.Expressions;
 using Parse.Expressions.Literals;
@@ -39,5 +40,12 @@ public class Declaration : Statement
         Symbol symbol = new Symbol(_name, value, _line, _isConstant);
 
         Env.AddVariable(symbol);
+    }
+
+    public override string Interpret(bool lastInShell)
+    {
+        Interpret();
+        
+        return lastInShell ? _valueExpression.Evaluate().DisplayValue : "";
     }
 }

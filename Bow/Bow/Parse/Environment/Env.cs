@@ -67,13 +67,7 @@ public class Env
         {
             foreach (KeyValuePair<string, Symbol> pair in scope._variables)
             {
-                Literal literal = pair.Value.Literal;
-                string value = literal.StrValue;
-                
-                if (literal.Type == TokenType.StrLiteral)
-                {
-                    value = $"\"{value}\"";
-                }
+                string value = pair.Value.Literal.DisplayValue;
                 
                 Console.WriteLine($"{pair.Key} = {value}");
             }
