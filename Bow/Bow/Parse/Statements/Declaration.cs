@@ -46,6 +46,6 @@ public class Declaration : Statement
     {
         Interpret();
         
-        return lastInShell ? _valueExpression.Evaluate().DisplayValue : "";
+        return lastInShell ? Env.GetVariable(_name).Literal.DisplayValue : "";
     }
 }

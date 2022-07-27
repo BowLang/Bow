@@ -5,7 +5,7 @@ namespace Parse.Environment;
 public class Symbol
 {
     public string Name { get;  }
-    public Literal Literal { get;  }
+    public Literal Literal { get; private set; }
     public int Line { get; }
     public bool IsConstant { get;  }
 
@@ -15,5 +15,10 @@ public class Symbol
         Literal = literal;
         Line = line;
         IsConstant = isConstant;
+    }
+
+    public void SetValue(Literal newValue)
+    {
+        Literal = newValue;
     }
 }
