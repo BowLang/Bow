@@ -5,3 +5,4 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 Bow/test.bow
+.vs/
