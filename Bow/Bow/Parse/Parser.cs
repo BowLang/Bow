@@ -92,6 +92,11 @@ public class Parser
             {
                 return DeclareStatement(name, Previous().Line);
             }
+            
+            if (Match(new[] { TokenType.Assign }))
+            {
+                return AssignStatement(name, Previous().Line);
+            }
 
             return LiteralStatement(Previous().Line);
         }
@@ -148,6 +153,13 @@ public class Parser
         }
 
         return (type, isConstant);
+    }
+    
+    private Statement AssignStatement(string name, int line)
+    {
+        Expression valueExpression = GetExpression(Previous().Line);
+        
+        return new Assignment(name, valueExpression, line);
     }
     
     private Statement LiteralStatement(int line)

@@ -129,7 +129,7 @@ public class Lexer
     
     private void LeftSingleArrow()
     {
-        if (PeekNext() == '<')
+        if (Peek() == '<')
         {
             Assign();
         }
