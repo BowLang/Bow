@@ -4,17 +4,17 @@ namespace Parse.Expressions;
 
 public class LiteralExpression : Expression
 {
-    private Literal _value;
-    private int _line;
+    private readonly Literal _literal;
+    private readonly int _line;
     
-    public LiteralExpression(Literal value, int line)
+    public LiteralExpression(Literal literal, int line)
     {
-        _value = value;
+        _literal = literal;
         _line = line;
     }
 
     public override Literal Evaluate()
     {
-        return _value;
+        return _literal;
     }
 }

@@ -38,24 +38,17 @@ public class BinaryExpression : Expression
             case TokenType.StrLiteral:
                 return _operator.Type switch
                 {
-                    TokenType.Plus => new Literal(left.Value + right.Value, TokenType.StrLiteral),
+                    TokenType.Plus => new StrLiteral(left.Value + right.Value),
                     _ => throw new BowTypeError(
                         $"Can't perform {_operator.Type} operation on strings on line {_line}")
                 };
             case TokenType.DecLiteral:
-                double leftDec = double.Parse(left.Value);
-                double rightDec = double.Parse(right.Value);
-
                 return _operator.Type switch
                 {
-                    TokenType.Plus => new Literal((leftDec + rightDec).ToString(CultureInfo.CurrentCulture),
-                        TokenType.DecLiteral),
-                    TokenType.Minus => new Literal((leftDec - rightDec).ToString(CultureInfo.CurrentCulture),
-                        TokenType.DecLiteral),
-                    TokenType.Star => new Literal((leftDec * rightDec).ToString(CultureInfo.CurrentCulture),
-                        TokenType.DecLiteral),
-                    TokenType.Slash => new Literal((leftDec / rightDec).ToString(CultureInfo.CurrentCulture),
-                        TokenType.DecLiteral),
+                    TokenType.Plus  => new DecLiteral(left.Value + right.Value),
+                    TokenType.Minus => new DecLiteral(left.Value - right.Value),
+                    TokenType.Star  => new DecLiteral(left.Value * right.Value),
+                    TokenType.Slash => new DecLiteral(left.Value / right.Value),
                     _ => throw new BowTypeError(
                         $"Can't perform `{_operator.Type} operation on decimals on line {_line}")
                 };

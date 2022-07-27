@@ -2,12 +2,8 @@
 
 public class Literal
 {
-    public string Value { get; }
-    public string Type { get; }
-    
-    public Literal(string value, string type)
-    {
-        Value = value;
-        Type = type;
-    }
+    public dynamic Value { get; init; } = "";
+    public string Type { get; init; } = "";
+
+    public string StrValue => Value.ToString();
 }

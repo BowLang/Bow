@@ -1,4 +1,6 @@
-﻿using Parse.Environment;
+﻿using Errors;
+using Tokenise;
+using Parse.Environment;
 using Parse.Expressions.Literals;
 
 namespace Parse.Expressions;
@@ -16,8 +18,14 @@ public class VariableExpression : Expression
 
     public override Literal Evaluate()
     {
-        Symbol var = Env.GetVariable(_name);
-        
-        return new Literal(var.Value, var.Type);
+        Literal value = Env.GetVariable(_name).Literal;
+
+        return value.Type switch
+        {
+            TokenType.StrLiteral => new StrLiteral(value.Value),
+            TokenType.BooLiteral => new BooLiteral(value.Value),
+            TokenType.DecLiteral => new DecLiteral(value.Value),
+            _ => throw new BowRuntimeError($"Variable expression contains unknown type {value.Type} on line {_line}")
+        };
     }
 }

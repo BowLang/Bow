@@ -29,7 +29,7 @@ public class UnaryExpression : Expression
                 {
                     throw new BowTypeError($"Can't negate non-decimal value on line {_line}");
                 }
-                return new Literal((-double.Parse(right.Value)).ToString(CultureInfo.CurrentCulture), TokenType.DecLiteral);
+                return new DecLiteral(-right.Value);
             default:
                 throw new BowTypeError($"Can't perform `{_operator.Type} operation {right.Type} on line {_line}");
         }
