@@ -27,11 +27,11 @@ public class UnaryExpression : Expression
             case TokenType.Minus:
                 if (right.Type != TokenType.DecLiteral)
                 {
-                    throw new BowSyntaxError($"Can't negate non-decimal value on line {_line}");
+                    throw new BowTypeError($"Can't negate non-decimal value on line {_line}");
                 }
                 return new Literal((-double.Parse(right.Value)).ToString(CultureInfo.CurrentCulture), TokenType.DecLiteral);
             default:
-                throw new BowSyntaxError($"Can't perform `{_operator.Type} operation {right.Type} on line {_line}");
+                throw new BowTypeError($"Can't perform `{_operator.Type} operation {right.Type} on line {_line}");
         }
     }
 }

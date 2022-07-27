@@ -28,18 +28,18 @@ public class BinaryExpression : Expression
         
         if (left.Type != right.Type)
         {
-            throw new BowSyntaxError($"Cannot perform operation on two different types on line {_line}");
+            throw new BowTypeError($"Cannot perform operation on two different types on line {_line}");
         }
 
         switch (left.Type)
         {
             case TokenType.BooLiteral:
-                throw new BowSyntaxError($"Can't perform operations on booleans on line {_line}");
+                throw new BowTypeError($"Can't perform operations on booleans on line {_line}");
             case TokenType.StrLiteral:
                 return _operator.Type switch
                 {
                     TokenType.Plus => new Literal(left.Value + right.Value, TokenType.StrLiteral),
-                    _ => throw new BowSyntaxError(
+                    _ => throw new BowTypeError(
                         $"Can't perform {_operator.Type} operation on strings on line {_line}")
                 };
             case TokenType.DecLiteral:
@@ -56,11 +56,11 @@ public class BinaryExpression : Expression
                         TokenType.DecLiteral),
                     TokenType.Slash => new Literal((leftDec / rightDec).ToString(CultureInfo.CurrentCulture),
                         TokenType.DecLiteral),
-                    _ => throw new BowSyntaxError(
+                    _ => throw new BowTypeError(
                         $"Can't perform `{_operator.Type} operation on decimals on line {_line}")
                 };
             default:
-                throw new BowSyntaxError($"Can't perform operations on {left.Type} on line {_line}");
+                throw new BowTypeError($"Can't perform operations on {left.Type} on line {_line}");
         }
     } 
 }
