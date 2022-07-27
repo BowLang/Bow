@@ -33,10 +33,10 @@ public class Declaration : Statement
 
         if (_type != value.Type)
         {
-            throw new BowSyntaxError($"Can't assign {value.Type} to variable of type {_type[..3]} on line {_line}");
+            throw new BowTypeError($"Can't assign {value.Type} to variable of type {_type[..3]} on line {_line}");
         }
         
-        Symbol symbol = new Symbol(_name, _type, value.Value, _line, _isConstant);
+        Symbol symbol = new Symbol(_name, value, _line, _isConstant);
 
         Env.AddVariable(symbol);
     }

@@ -33,15 +33,21 @@ public class Bow
 
             List<Statement> statements = new Parser(tokens).Parse();
             new Interpreter(statements).Interpret();
-
+        }
+        catch (BowSyntaxError ex)
+        {
+            Console.WriteLine($"\x1B[91mBow Syntax Error: {(_debug ? ex : ex.Message)}\x1B[0m");
+        }
+        catch (BowTypeError ex)
+        {
+            Console.WriteLine($"\x1B[91mBow Type Error: {(_debug ? ex : ex.Message)}\x1B[0m");
+        }
+        finally
+        {
             if (_debug)
             {
                 Env.OutputVariables();
             }
-        }
-        catch (BowSyntaxError ex)
-        {
-            Console.WriteLine($"\x1B[91m{(_debug ? ex : ex.Message)}\x1B[0m");
         }
     }
 }

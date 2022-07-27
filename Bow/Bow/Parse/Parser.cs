@@ -194,9 +194,19 @@ public class Parser
 
     private Expression Primary(int line)
     {
-        if (Match(new[] { TokenType.BooLiteral, TokenType.DecLiteral, TokenType.StrLiteral }))
+        if (Match(new[] { TokenType.BooLiteral }))
         {
-            return new LiteralExpression(new Literal(Previous().Literal, Previous().Type), line);
+            return new LiteralExpression(new BooLiteral(Previous().Literal), line);
+        }
+        
+        if (Match(new[] { TokenType.DecLiteral }))
+        {
+            return new LiteralExpression(new DecLiteral(Previous().Literal), line);
+        }
+        
+        if (Match(new[] { TokenType.StrLiteral }))
+        {
+            return new LiteralExpression(new StrLiteral(Previous().Literal), line);
         }
         
         if (Match(new[] { TokenType.Identifier }))

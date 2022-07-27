@@ -1,20 +1,18 @@
-﻿using Errors;
+﻿using Parse.Expressions.Literals;
 
 namespace Parse.Environment;
 
 public class Symbol
 {
     public string Name { get;  }
-    public string Type { get; }
-    public string Value { get; }
+    public Literal Literal { get;  }
     public int Line { get; }
-    public bool IsConstant { get; set;  }
+    public bool IsConstant { get;  }
 
-    public Symbol(string name, string type, string value, int line, bool isConstant)
+    public Symbol(string name, Literal literal, int line, bool isConstant)
     {
         Name = name;
-        Type = type;
-        Value = value;
+        Literal = literal;
         Line = line;
         IsConstant = isConstant;
     }

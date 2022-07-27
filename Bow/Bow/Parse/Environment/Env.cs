@@ -1,5 +1,6 @@
 ﻿using Errors;
 using Tokenise;
+using Parse.Expressions.Literals;
 
 namespace Parse.Environment;
 
@@ -66,9 +67,10 @@ public class Env
         {
             foreach (KeyValuePair<string, Symbol> pair in scope._variables)
             {
-                string value = pair.Value.Value;
+                Literal literal = pair.Value.Literal;
+                string value = literal.StrValue;
                 
-                if (pair.Value.Type == TokenType.Str)
+                if (literal.Type == TokenType.StrLiteral)
                 {
                     value = $"\"{value}\"";
                 }
