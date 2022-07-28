@@ -100,6 +100,11 @@ public class Parser
 
             return LiteralStatement(Previous().Line);
         }
+
+        if (Match(new[] { TokenType.If }))
+        {
+            return IfStatement(Previous().Line);
+        }
         
         if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral }))
         {
@@ -155,11 +160,47 @@ public class Parser
         return (type, isConstant);
     }
     
+    private List<Statement> GetStatementBlock(string[] terminators, int line)
+    {
+        List<Statement> statementList = new();
+
+        while (!IsAtEnd() && !Match(terminators))
+        {
+            statementList.Add(GetStatement());
+        }
+
+        if (!terminators.Contains(Previous().Type))
+        {
+            throw new BowSyntaxError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
+        }
+
+        if (statementList.Count == 0)
+        {
+            throw new BowSyntaxError($"Empty statement block on line {line}");
+        }
+
+        return statementList;
+    }
+    
     private Statement AssignStatement(string name, int line)
     {
         Expression valueExpression = GetExpression(Previous().Line);
         
         return new Assignment(name, valueExpression, line);
+    }
+
+    private Statement IfStatement(int line)
+    {
+        Expression condition = GetExpression(Previous().Line);
+        
+        if (!Match(new[] { TokenType.OpenBlock }))
+        {
+            throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+        }
+        
+        List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+
+        return new If(condition, statements, line);
     }
     
     private Statement LiteralStatement(int line)

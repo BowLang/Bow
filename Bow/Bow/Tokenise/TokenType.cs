@@ -36,6 +36,8 @@ public struct TokenType
         CloseDeclare     = "CLOSE_DECLARE",
         Identifier       = "IDENTIFIER",
         
+        If               = "IF",
+        
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",
         

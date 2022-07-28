@@ -1,6 +1,4 @@
-﻿using Tokenise;
-
-namespace Parse.Statements;
+﻿namespace Parse.Statements;
 
 public class Statement
 {
@@ -11,6 +9,8 @@ public class Statement
 
     public virtual string Interpret(bool lastInShell)
     {
-        throw new NotImplementedException();
+        Interpret();
+
+        return "";
     }
 }
