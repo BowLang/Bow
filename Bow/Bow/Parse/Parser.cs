@@ -200,6 +200,18 @@ public class Parser
         
         List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
 
+        if (Match(new[] { TokenType.Alt }))
+        {
+            if (Match(new[] { TokenType.OpenBlock }))
+            {
+                List<Statement> altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+            
+                return new Alt(condition, statements, altStatements, line);
+            }
+            
+            throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+        }
+
         return new If(condition, statements, line);
     }
     

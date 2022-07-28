@@ -37,6 +37,7 @@ public struct TokenType
         Identifier       = "IDENTIFIER",
         
         If               = "IF",
+        Alt              = "ALT",
         
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",
