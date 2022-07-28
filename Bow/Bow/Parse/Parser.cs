@@ -191,28 +191,54 @@ public class Parser
 
     private Statement IfStatement(int line)
     {
-        Expression condition = GetExpression(Previous().Line);
+        Expression ifCondition = GetExpression(Previous().Line);
         
         if (!Match(new[] { TokenType.OpenBlock }))
         {
             throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
         }
         
-        List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+        List<Statement> ifStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+
+        List<Tuple<Expression, List<Statement>>> altIfs = new();
+        
+        while (Match(new[] { TokenType.AltIf }))
+        {
+            Expression altCondition = GetExpression(Previous().Line);
+            
+            if (!Match(new[] { TokenType.OpenBlock }))
+            {
+                throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+            }
+            
+            List<Statement> altIfStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+            
+            altIfs.Add(Tuple.Create(altCondition, altIfStatements));
+        }
 
         if (Match(new[] { TokenType.Alt }))
         {
             if (Match(new[] { TokenType.OpenBlock }))
             {
                 List<Statement> altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
-            
-                return new Alt(condition, statements, altStatements, line);
+
+                if (altIfs.Count == 0)
+                {
+                    return new Alt(ifCondition, ifStatements, altStatements, line);
+                }
+
+                return new AltIf(ifCondition, ifStatements, altIfs, altStatements, line);
             }
             
             throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
         }
 
-        return new If(condition, statements, line);
+        if (altIfs.Count == 0)
+        {
+            return new If(ifCondition, ifStatements, line);
+        }
+
+        return new AltIf(ifCondition, ifStatements, altIfs, line);
     }
     
     private Statement LiteralStatement(int line)

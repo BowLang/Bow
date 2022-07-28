@@ -38,6 +38,7 @@ public struct TokenType
         
         If               = "IF",
         Alt              = "ALT",
+        AltIf            = "ALT_IF",
         
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",

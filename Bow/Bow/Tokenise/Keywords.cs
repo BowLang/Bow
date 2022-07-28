@@ -12,7 +12,8 @@ public struct Keywords
         { "true",  TokenType.BooLiteral },
         { "false", TokenType.BooLiteral },
         { "if",    TokenType.If         },
-        { "alt",   TokenType.Alt        }
+        { "alt",   TokenType.Alt        },
+        { "altif", TokenType.AltIf      }
     };
 
     public static bool Contains(string key)
