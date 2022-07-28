@@ -3,27 +3,41 @@
 public struct TokenType
 {
     public const string
-        Plus         = "+",
-        Minus        = "-",
-        Star         = "*",
-        Slash        = "/",
-        Dot          = ".",
+        Plus             = "PLUS",
+        Minus            = "MINUS",
+        Star             = "STAR",
+        Slash            = "SLASH",
+        Dot              = "DOT",
         
-        StrLiteral   = "STRLITERAL",
-        DecLiteral   = "DECLITERAL",
-        BooLiteral   = "BOOLITERAL",
+        Equal            = "EQUAL",
+        NotEqual         = "NOT_EQUAL",
+        LessThan         = "LESS_THAN",
+        LessThanEqual    = "LESS_THAN_EQUAL",
+        GreaterThan      = "GREATER_THAN",
+        GreaterThanEqual = "GREATER_THAN_EQUAL",
         
-        Str          = "STR",
-        Dec          = "DEC",
-        Boo          = "BOO",
+        Not              = "NOT",
+        And              = "AND",
+        Or               = "OR",
         
-        Var         = "VAR",
-        Con         = "CON",
+        StrLiteral       = "STRLITERAL",
+        DecLiteral       = "DECLITERAL",
+        BooLiteral       = "BOOLITERAL",
         
-        Assign       = "ASSIGN",
-        OpenDeclare  = "OPEN_DECLARE",
-        CloseDeclare = "CLOSE_DECLARE",
-        Identifier   = "IDENTIFIER",
+        Str              = "STR",
+        Dec              = "DEC",
+        Boo              = "BOO",
         
-        EOF          = "EOF";
+        Var              = "VAR",
+        Con              = "CON",
+        
+        Assign           = "ASSIGN",
+        OpenDeclare      = "OPEN_DECLARE",
+        CloseDeclare     = "CLOSE_DECLARE",
+        Identifier       = "IDENTIFIER",
+        
+        OpenBlock        = "OPEN_BLOCK",
+        CloseBlock       = "CLOSE_BLOCK",
+        
+        EOF              = "EOF";
 }

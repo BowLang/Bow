@@ -52,8 +52,23 @@ public class Lexer
             case '\'': case '"':
                 Str();
                 break;
+            case '>':
+                GreaterThan();
+                break;
             case '<':
                 LessThan();
+                break;
+            case '=':
+                Equals();
+                break;
+            case '!':
+                Bang();
+                break;
+            case '&':
+                And();
+                break;
+            case '|':
+                Or();
                 break;
             case ' ': case '\r': case '\t':
                 break;
@@ -117,6 +132,19 @@ public class Lexer
             AddToken(TokenType.Minus);
         }
     }
+    
+    private void GreaterThan()
+    {
+        if (Peek() == '=')
+        {
+            Advance();
+            AddToken(TokenType.GreaterThanEqual);
+        }
+        else
+        {
+            AddToken(TokenType.GreaterThan);
+        }
+    }
 
     private void LessThan()
     {
@@ -125,29 +153,100 @@ public class Lexer
             Advance();
             LeftSingleArrow();
         }
+        else if (Peek() == '=')
+        {
+            Advance();
+            LessThanEqual();
+        }
+        else
+        {
+            AddToken(TokenType.LessThan);
+        }
     }
     
     private void LeftSingleArrow()
     {
         if (Peek() == '<')
         {
-            Assign();
+            Advance();
+            AddToken(TokenType.Assign);
         }
         else
         {
-            Declare();
+            AddToken(TokenType.OpenDeclare);
+        }
+    }
+    
+    private void LessThanEqual()
+    {
+        if (Peek() == '=')
+        {
+            Advance();
+            AddToken(TokenType.CloseBlock);
+        }
+        else
+        {
+            AddToken(TokenType.LessThanEqual);
         }
     }
 
-    private void Assign()
+    private void Equals()
     {
-        Advance();
-        AddToken(TokenType.Assign);
+        if (Peek() == '=')
+        {
+            Advance();
+            RightDoubleArrow();
+        }
+        else
+        {
+            AddToken(TokenType.Equal);
+        }
     }
-    
-    private void Declare()
+
+    private void RightDoubleArrow()
     {
-        AddToken(TokenType.OpenDeclare);
+        if (Peek() != '>')
+        {
+            throw new BowSyntaxError($"Malformed open block arrow on line {_line}");
+        }
+
+        Advance();
+        AddToken(TokenType.OpenBlock);
+    }
+
+    private void Bang()
+    {
+        if (Peek() == '=')
+        {
+            Advance();
+            AddToken(TokenType.NotEqual);
+        }
+        else
+        {
+            AddToken(TokenType.Not);
+        }
+    }
+
+    private void And()
+    {
+        if (Peek() != '&')
+        {
+            throw new BowSyntaxError($"Expected '&' on line {_line}");
+        }
+        
+        Advance();
+        AddToken(TokenType.And);
+    }
+
+    private void Or()
+    {
+        if (Peek() != '|')
+        {
+            throw new BowSyntaxError($"Expected '|' on line {_line}");
+        }
+        
+        Advance();
+        AddToken(TokenType.Or);
     }
 
     private void Str()
