@@ -200,6 +200,15 @@ public class Parser
         
         List<Statement> ifStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
 
+        List<Tuple<Expression, List<Statement>>> altIfs = AltIfs(line);
+        
+        List<Statement> altStatements = Alt(line);
+
+        return new If(ifCondition, ifStatements, altIfs, altStatements, line);
+    }
+
+    private List<Tuple<Expression, List<Statement>>> AltIfs(int line)
+    {
         List<Tuple<Expression, List<Statement>>> altIfs = new();
         
         while (Match(new[] { TokenType.AltIf }))
@@ -216,29 +225,24 @@ public class Parser
             altIfs.Add(Tuple.Create(altCondition, altIfStatements));
         }
 
+        return altIfs;
+    }
+
+    private List<Statement> Alt(int line)
+    {
+        List<Statement> altStatements = new();
+
         if (Match(new[] { TokenType.Alt }))
         {
-            if (Match(new[] { TokenType.OpenBlock }))
+            if (!Match(new[] { TokenType.OpenBlock }))
             {
-                List<Statement> altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
-
-                if (altIfs.Count == 0)
-                {
-                    return new Alt(ifCondition, ifStatements, altStatements, line);
-                }
-
-                return new AltIf(ifCondition, ifStatements, altIfs, altStatements, line);
+                throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
             }
             
-            throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+            altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
         }
 
-        if (altIfs.Count == 0)
-        {
-            return new If(ifCondition, ifStatements, line);
-        }
-
-        return new AltIf(ifCondition, ifStatements, altIfs, line);
+        return altStatements;
     }
     
     private Statement LiteralStatement(int line)
