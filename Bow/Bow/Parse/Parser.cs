@@ -175,11 +175,57 @@ public class Parser
 
     private Expression GetExpression(int line, bool checkNone=true)
     {
-        Expression expression = GetTerm(line);
+        Expression expression = GetOr(line);
 
         if (checkNone && expression == null)
         {
             throw new BowSyntaxError($"missing expression on line {line}");
+        }
+
+        return expression;
+    }
+
+    private Expression GetOr(int line)
+    {
+        Expression expression = GetAnd(line);
+        
+        while (Match(new[] { TokenType.Or }))
+        {
+            Token op = Previous();
+            Expression right = GetAnd(line);
+            expression = new BinaryExpression(expression, op, right, line);
+        }
+
+        return expression;
+    }
+
+    private Expression GetAnd(int line)
+    {
+        Expression expression = GetComparison(line);
+        
+        while (Match(new[] { TokenType.And }))
+        {
+            Token op = Previous();
+            Expression right = GetComparison(line);
+            expression = new BinaryExpression(expression, op, right, line);
+        }
+
+        return expression;
+    }
+
+    private Expression GetComparison(int line)
+    {
+        Expression expression = GetTerm(line);
+        
+        while (Match(new[]
+               {
+                   TokenType.Equal, TokenType.NotEqual, TokenType.LessThan, TokenType.LessThanEqual,
+                   TokenType.GreaterThan, TokenType.GreaterThanEqual
+               }))
+        {
+            Token op = Previous();
+            Expression right = GetTerm(line);
+            expression = new BinaryExpression(expression, op, right, line);
         }
 
         return expression;

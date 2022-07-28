@@ -30,11 +30,43 @@ public class BinaryExpression : Expression
         {
             throw new BowTypeError($"Cannot perform operation on two different types on line {_line}");
         }
+        
+        // Comparison Operators
 
+        if (left.Type == TokenType.DecLiteral)
+        {
+            switch (_operator.Type)
+            {
+                case TokenType.LessThan:
+                    return new BooLiteral(left.Value < right.Value);
+                case TokenType.LessThanEqual:
+                    return new BooLiteral(left.Value <= right.Value);
+                case TokenType.GreaterThan:
+                    return new BooLiteral(left.Value > right.Value);
+                case TokenType.GreaterThanEqual:
+                    return new BooLiteral(left.Value >= right.Value);
+            }
+        }
+        
+        switch (_operator.Type)
+        {
+            case TokenType.Equal:
+                return new BooLiteral(left.Value == right.Value);
+            case TokenType.NotEqual:
+                return new BooLiteral(left.Value != right.Value);
+        }
+        
+        // Arithmetic Operators
+        
         switch (left.Type)
         {
             case TokenType.BooLiteral:
-                throw new BowTypeError($"Can't perform operations on booleans on line {_line}");
+                return _operator.Type switch
+                {
+                    TokenType.And => new BooLiteral(left.Value && right.Value),
+                    TokenType.Or => new BooLiteral(left.Value || right.Value),
+                    _ => throw new BowTypeError($"Can't perform {_operator.Type} operation on booleans on line {_line}")
+                };
             case TokenType.StrLiteral:
                 return _operator.Type switch
                 {
