@@ -265,7 +265,7 @@ public class Lexer
 
         if (IsAtEnd())
         {
-            throw new BowSyntaxError($"unterminated string on line {_line}");
+            throw new BowEOFError($"unterminated string on line {_line}");
         }
 
         Advance();

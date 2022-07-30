@@ -54,7 +54,7 @@ public class Parser
             return token;
         }
 
-        throw new BowSyntaxError($"Unexpected EOF at line {_tokens[_current].Line}");
+        throw new BowEOFError($"Unexpected EOF at line {_tokens[_current].Line}");
     }
 
     private Token Previous()
@@ -171,7 +171,7 @@ public class Parser
 
         if (!terminators.Contains(Previous().Type))
         {
-            throw new BowSyntaxError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
+            throw new BowEOFError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
         }
 
         if (statementList.Count == 0)
