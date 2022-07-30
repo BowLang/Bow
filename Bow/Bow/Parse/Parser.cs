@@ -54,7 +54,7 @@ public class Parser
             return token;
         }
 
-        throw new BowSyntaxError($"Unexpected EOF at line {_tokens[_current].Line}");
+        throw new BowEOFError($"Unexpected EOF at line {_tokens[_current].Line}");
     }
 
     private Token Previous()
@@ -99,6 +99,11 @@ public class Parser
             }
 
             return LiteralStatement(Previous().Line);
+        }
+
+        if (Match(new[] { TokenType.If }))
+        {
+            return IfStatement(Previous().Line);
         }
         
         if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral }))
@@ -155,11 +160,89 @@ public class Parser
         return (type, isConstant);
     }
     
+    private List<Statement> GetStatementBlock(string[] terminators, int line)
+    {
+        List<Statement> statementList = new();
+
+        while (!IsAtEnd() && !Match(terminators))
+        {
+            statementList.Add(GetStatement());
+        }
+
+        if (!terminators.Contains(Previous().Type))
+        {
+            throw new BowEOFError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
+        }
+
+        if (statementList.Count == 0)
+        {
+            throw new BowSyntaxError($"Empty statement block on line {line}");
+        }
+
+        return statementList;
+    }
+    
     private Statement AssignStatement(string name, int line)
     {
         Expression valueExpression = GetExpression(Previous().Line);
         
         return new Assignment(name, valueExpression, line);
+    }
+
+    private Statement IfStatement(int line)
+    {
+        Expression ifCondition = GetExpression(Previous().Line);
+        
+        if (!Match(new[] { TokenType.OpenBlock }))
+        {
+            throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+        }
+        
+        List<Statement> ifStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+
+        List<Tuple<Expression, List<Statement>>> altIfs = AltIfs(line);
+        
+        List<Statement> altStatements = Alt(line);
+
+        return new If(ifCondition, ifStatements, altIfs, altStatements, line);
+    }
+
+    private List<Tuple<Expression, List<Statement>>> AltIfs(int line)
+    {
+        List<Tuple<Expression, List<Statement>>> altIfs = new();
+        
+        while (Match(new[] { TokenType.AltIf }))
+        {
+            Expression altCondition = GetExpression(Previous().Line);
+            
+            if (!Match(new[] { TokenType.OpenBlock }))
+            {
+                throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+            }
+            
+            List<Statement> altIfStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+            
+            altIfs.Add(Tuple.Create(altCondition, altIfStatements));
+        }
+
+        return altIfs;
+    }
+
+    private List<Statement> Alt(int line)
+    {
+        List<Statement> altStatements = new();
+
+        if (Match(new[] { TokenType.Alt }))
+        {
+            if (!Match(new[] { TokenType.OpenBlock }))
+            {
+                throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+            }
+            
+            altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+        }
+
+        return altStatements;
     }
     
     private Statement LiteralStatement(int line)
@@ -175,11 +258,57 @@ public class Parser
 
     private Expression GetExpression(int line, bool checkNone=true)
     {
-        Expression expression = GetTerm(line);
+        Expression expression = GetOr(line);
 
         if (checkNone && expression == null)
         {
             throw new BowSyntaxError($"missing expression on line {line}");
+        }
+
+        return expression;
+    }
+
+    private Expression GetOr(int line)
+    {
+        Expression expression = GetAnd(line);
+        
+        while (Match(new[] { TokenType.Or }))
+        {
+            Token op = Previous();
+            Expression right = GetAnd(line);
+            expression = new BinaryExpression(expression, op, right, line);
+        }
+
+        return expression;
+    }
+
+    private Expression GetAnd(int line)
+    {
+        Expression expression = GetComparison(line);
+        
+        while (Match(new[] { TokenType.And }))
+        {
+            Token op = Previous();
+            Expression right = GetComparison(line);
+            expression = new BinaryExpression(expression, op, right, line);
+        }
+
+        return expression;
+    }
+
+    private Expression GetComparison(int line)
+    {
+        Expression expression = GetTerm(line);
+        
+        while (Match(new[]
+               {
+                   TokenType.Equal, TokenType.NotEqual, TokenType.LessThan, TokenType.LessThanEqual,
+                   TokenType.GreaterThan, TokenType.GreaterThanEqual
+               }))
+        {
+            Token op = Previous();
+            Expression right = GetTerm(line);
+            expression = new BinaryExpression(expression, op, right, line);
         }
 
         return expression;
