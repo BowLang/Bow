@@ -3,6 +3,9 @@
 public struct TokenType
 {
     public const string
+        LeftBracket      = "LEFT_BRACKET",
+        RightBracket     = "RIGHT_BRACKET",
+        
         Plus             = "PLUS",
         Minus            = "MINUS",
         Star             = "STAR",

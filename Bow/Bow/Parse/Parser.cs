@@ -106,13 +106,35 @@ public class Parser
             return IfStatement(Previous().Line);
         }
         
-        if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral }))
+        if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral, TokenType.LeftBracket }))
         {
             return LiteralStatement(Previous().Line);
         }
 
         Advance();
         throw new BowSyntaxError($"Unexpected token '{Previous().Lexeme}' on line {Previous().Line}");
+    }
+    
+    private List<Statement> GetStatementBlock(string[] terminators, int line)
+    {
+        List<Statement> statementList = new();
+
+        while (!IsAtEnd() && !Match(terminators))
+        {
+            statementList.Add(GetStatement());
+        }
+
+        if (!terminators.Contains(Previous().Type))
+        {
+            throw new BowEOFError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
+        }
+
+        if (statementList.Count == 0)
+        {
+            throw new BowSyntaxError($"Empty statement block on line {line}");
+        }
+
+        return statementList;
     }
 
     private Statement DeclareStatement(string name, int line)
@@ -158,28 +180,6 @@ public class Parser
         }
 
         return (type, isConstant);
-    }
-    
-    private List<Statement> GetStatementBlock(string[] terminators, int line)
-    {
-        List<Statement> statementList = new();
-
-        while (!IsAtEnd() && !Match(terminators))
-        {
-            statementList.Add(GetStatement());
-        }
-
-        if (!terminators.Contains(Previous().Type))
-        {
-            throw new BowEOFError($"Unexpected EOF while looking for '{string.Join(", ", terminators)}'");
-        }
-
-        if (statementList.Count == 0)
-        {
-            throw new BowSyntaxError($"Empty statement block on line {line}");
-        }
-
-        return statementList;
     }
     
     private Statement AssignStatement(string name, int line)
@@ -356,6 +356,11 @@ public class Parser
 
     private Expression Primary(int line)
     {
+        if (IsAtEnd())
+        {
+            throw new BowEOFError($"Unexpected EOF on line {Peek().Line}");
+        }
+        
         if (Match(new[] { TokenType.BooLiteral }))
         {
             return new LiteralExpression(new BooLiteral(Previous().Literal), line);
@@ -374,6 +379,18 @@ public class Parser
         if (Match(new[] { TokenType.Identifier }))
         {
             return new VariableExpression(Previous().Literal, Previous().Line);
+        }
+        
+        if (Match(new[] { TokenType.LeftBracket }))
+        {
+            Expression expression = GetExpression(line);
+            
+            if (!Match(new[] { TokenType.RightBracket }))
+            {
+                throw new BowEOFError($"Missing ')' on line {Peek().Line}");
+            }
+            
+            return expression;
         }
         
         throw new BowSyntaxError($"Unexpected token '{Previous().Lexeme}' on line {Previous().Line}");
