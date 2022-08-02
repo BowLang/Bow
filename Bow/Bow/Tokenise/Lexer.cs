@@ -40,6 +40,9 @@ public class Lexer
             case ')':
                 AddToken(TokenType.RightBracket);
                 break;
+            case ',':
+                AddToken(TokenType.Comma);
+                break;
             case '+':
                 AddToken(TokenType.Plus);
                 break;
@@ -177,6 +180,12 @@ public class Lexer
             Advance();
             AddToken(TokenType.Assign);
         }
+
+        if (Peek() == '-')
+        {
+            Advance();
+            AddToken(TokenType.ReturnArrow);
+        }
         else
         {
             AddToken(TokenType.OpenDeclare);
@@ -202,6 +211,11 @@ public class Lexer
         {
             Advance();
             RightDoubleArrow();
+        }
+        else if (Peek() == '>')
+        {
+            Advance();
+            AddToken(TokenType.FunTypeOpenBlock);
         }
         else
         {
