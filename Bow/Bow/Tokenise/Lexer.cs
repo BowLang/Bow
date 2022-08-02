@@ -262,11 +262,13 @@ public class Lexer
     {
         if (Peek() != '|')
         {
-            throw new BowSyntaxError($"Expected '|' on line {_line}");
+            AddToken(TokenType.Seperator);
         }
-        
-        Advance();
-        AddToken(TokenType.Or);
+        else
+        {
+            Advance();
+            AddToken(TokenType.Or);
+        }
     }
 
     private void Str()
