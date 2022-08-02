@@ -23,7 +23,7 @@ public class Bow
     public void Run()
     {
         string nextCode = "";
-        
+
         try
         {
             List<Token> tokens = new Lexer(_code).ScanTokens();
@@ -65,7 +65,7 @@ public class Bow
         {
             if (_debug)
             {
-                Env.OutputVariables();
+                Env.Output();
             }
 
             if (_inShell)

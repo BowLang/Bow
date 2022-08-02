@@ -105,6 +105,16 @@ public class Parser
         {
             return IfStatement(Previous().Line);
         }
+
+        if (Match(new[] { TokenType.Fun }))
+        {
+            return FunctionStatement(Previous().Line);
+        }
+        
+        if (Match(new[] { TokenType.ReturnArrow }))
+        {
+            return ReturnStatement();
+        }
         
         if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral, TokenType.LeftBracket }))
         {
@@ -243,6 +253,126 @@ public class Parser
         }
 
         return altStatements;
+    }
+    
+    private Statement FunctionStatement(int line)
+    {
+        if (!Match(new [] { TokenType.Identifier }))
+        {
+            throw new BowSyntaxError($"Missing function name on line {line}");
+        }
+        
+        string name = Previous().Literal;
+        
+        List<Tuple<string, List<string>>> parameters = FunParameters(line);
+
+        List<string> returnTypes = new();
+        
+        if (!Match(new[] { TokenType.OpenBlock }))
+        {
+            if (Match(new[] { TokenType.Equal }))
+            {
+                returnTypes = GetTypes(Previous().Line);
+
+                if (!Match(new[] { TokenType.FunTypeOpenBlock }))
+                {
+                    throw new BowSyntaxError($"Missing end of function type return arrow on line {Previous().Line}");
+                }
+            }
+        }
+        
+        List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+        
+        return new Function(name, parameters, returnTypes, statements, line);
+    }
+
+    private List<Tuple<string, List<string>>> FunParameters(int line)
+    {
+        List<Tuple<string, List<string>>> parameters = new();
+
+        if (!Match(new[] { TokenType.LeftBracket })) return parameters;
+        
+        if (!Match(new[] { TokenType.RightBracket }))
+        {
+            if (IsAtEnd())
+            {
+                throw new BowEOFError($"Unexpected EOF when looking for parameters on line {line}");
+            }
+
+            parameters.Add(GetParameter(line));
+        }
+        
+        while (Match(new[] { TokenType.Comma }))
+        {
+            if (IsAtEnd())
+            {
+                throw new BowEOFError($"Unexpected EOF when looking for parameters on line {line}");
+            }
+            
+            parameters.Add(GetParameter(line));
+        }
+        
+        if (!Match(new[] { TokenType.RightBracket }))
+        {
+            throw new BowSyntaxError($"Missing ')' on line {line}");
+        }
+
+        return parameters;
+    }
+
+    private Tuple<string, List<string>> GetParameter(int line)
+    {
+        if (!Match(new[] { TokenType.Identifier }))
+        {
+            throw new BowSyntaxError($"Missing parameter name on line {line}");
+        }
+                
+        string name = Previous().Literal;
+                
+        if (!Match(new[] { TokenType.Minus }))
+        {
+            throw new BowSyntaxError($"Missing opening type '-' on line {line}");
+        }
+
+        List<string> types = GetTypes(line);
+                
+        if (!Match(new[] { TokenType.Minus }))
+        {
+            throw new BowSyntaxError($"Missing closing type '-' on line {line}");
+        }
+
+        return Tuple.Create(name, types);
+    }
+
+    private List<string> GetTypes(int line)
+    {
+        List<string> types = new();
+                
+        if (!Match(new[] { TokenType.Str, TokenType.Dec, TokenType.Boo }))
+        {
+            throw new BowTypeError($"Unknown type on line {line}");
+        }
+                
+        types.Add(Previous().Type + "LITERAL");
+
+        while (Match(new[] { TokenType.Seperator }))
+        {
+            if (!Match(new[] { TokenType.Str, TokenType.Dec, TokenType.Boo }))
+            {
+                throw new BowTypeError($"Unknown type on line {line}");
+            }
+                    
+            types.Add(Previous().Type + "LITERAL");
+        }
+
+        return types;
+    }
+
+    private Statement ReturnStatement()
+    {
+        Expression returnExpression = GetExpression(Previous().Line, false);
+        
+        return new Return(returnExpression);
     }
     
     private Statement LiteralStatement(int line)

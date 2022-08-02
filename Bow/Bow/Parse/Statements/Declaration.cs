@@ -37,7 +37,7 @@ public class Declaration : Statement
             throw new BowTypeError($"Can't assign {value.Type} to variable of type {_type[..3]} on line {_line}");
         }
         
-        Symbol symbol = new Symbol(_name, value, _line, _isConstant);
+        VariableSymbol symbol = new VariableSymbol(_name, value, _line, _isConstant);
 
         Env.AddVariable(symbol);
     }
