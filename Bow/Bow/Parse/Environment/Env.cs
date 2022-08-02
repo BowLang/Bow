@@ -14,6 +14,12 @@ public class Env
         _functions = new Dictionary<string, FunctionSymbol>();
     }
 
+    public Env(Dictionary<string, VariableSymbol> variables)
+    {
+        _variables = variables;
+        _functions = new Dictionary<string, FunctionSymbol>();
+    }
+
     public static void PushScope(Env env)
     {
         Scopes.Insert(0, env);

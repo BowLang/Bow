@@ -21,6 +21,11 @@ public class UnaryExpression : Expression
     public override Literal Evaluate()
     {
         Literal right = _right.Evaluate();
+
+        if (right.Type == TokenType.NullReturn)
+        {
+            throw new BowTypeError($"Cannot perform operation on non-returning function on line {_line}");
+        }
         
         switch (_operator.Type)
         {

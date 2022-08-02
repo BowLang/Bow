@@ -26,6 +26,11 @@ public class BinaryExpression : Expression
         Literal left = _left.Evaluate();
         Literal right = _right.Evaluate();
         
+        if (left.Type == TokenType.NullReturn || right.Type == TokenType.NullReturn)
+        {
+            throw new BowTypeError($"Cannot perform operation on non-returning function on line {_line}");
+        }
+        
         if (left.Type != right.Type)
         {
             throw new BowTypeError($"Cannot perform operation on two different types on line {_line}");

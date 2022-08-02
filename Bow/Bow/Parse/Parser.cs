@@ -508,7 +508,36 @@ public class Parser
         
         if (Match(new[] { TokenType.Identifier }))
         {
-            return new VariableExpression(Previous().Literal, Previous().Line);
+            string name = Previous().Literal;
+            
+            if (Match(new[] { TokenType.LeftBracket }))
+            {
+                List<Expression> parameters = new();
+                
+                if (Peek().Type != TokenType.RightBracket)
+                {
+                    parameters.Add(GetExpression(line));
+                    
+                    while (Match(new[] { TokenType.Comma }))
+                    {
+                        if (IsAtEnd())
+                        {
+                            throw new BowEOFError($"Unexpected EOF when looking for parameters on line {line}");
+                        }
+                        
+                        parameters.Add(GetExpression(line));
+                    }
+                }
+                
+                if (!Match(new[] { TokenType.RightBracket }))
+                {
+                    throw new BowSyntaxError($"Missing ')' on line {line}");
+                }
+
+                return new FunctionExpression(name, parameters, Previous().Line);
+            }
+            
+            return new VariableExpression(name, Previous().Line);
         }
         
         if (Match(new[] { TokenType.LeftBracket }))

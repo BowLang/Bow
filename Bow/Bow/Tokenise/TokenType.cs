@@ -30,6 +30,8 @@ public struct TokenType
         DecLiteral       = "DECLITERAL",
         BooLiteral       = "BOOLITERAL",
         
+        NullReturn       = "NULL_RETURN",
+        
         Str              = "STR",
         Dec              = "DEC",
         Boo              = "BOO",
