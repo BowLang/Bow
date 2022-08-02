@@ -180,8 +180,7 @@ public class Lexer
             Advance();
             AddToken(TokenType.Assign);
         }
-
-        if (Peek() == '-')
+        else if (Peek() == '-')
         {
             Advance();
             AddToken(TokenType.ReturnArrow);
