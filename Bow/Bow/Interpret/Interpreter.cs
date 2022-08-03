@@ -19,7 +19,7 @@ public class Interpreter
         }
 
 
-        if (inShell)
+        if (inShell && _statements.Count > 0)
         {
             Console.WriteLine($"\x1B[95m> \x1B[93m{_statements.Last().Interpret(inShell)}\x1B[0m");
         }
