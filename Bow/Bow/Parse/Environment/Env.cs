@@ -1,4 +1,5 @@
 ﻿using Errors;
+using Parse.Expressions;
 
 namespace Parse.Environment;
 
@@ -32,6 +33,11 @@ public class Env
 
     public static void AddVariable(VariableSymbol symbol)
     {
+        if (FunctionExpression.IsBuiltinFunction(symbol.Name))
+        {
+            throw new BowNameError($"Unable to redefine built-in function '{symbol.Name}'");
+        }
+        
         Env scope = Scopes[0];
         
         if (!scope._variables.ContainsKey(symbol.Name))
@@ -66,7 +72,7 @@ public class Env
         }
     }
 
-    public static void OutputVariables()
+    private static void OutputVariables()
     {
         Console.WriteLine("\nVariables:");
         foreach (Env scope in Scopes)
@@ -82,6 +88,11 @@ public class Env
 
     public static void AddFunction(FunctionSymbol symbol)
     {
+        if (FunctionExpression.IsBuiltinFunction(symbol.Name))
+        {
+            throw new BowNameError($"Unable to redefine built-in function '{symbol.Name}'");
+        }
+        
         Env scope = Scopes[0];
         
         if (!scope._functions.ContainsKey(symbol.Name))
@@ -90,7 +101,7 @@ public class Env
         }
     }
 
-    public static FunctionSymbol GetFunction(string name)
+    public static FunctionSymbol GetFunction(string name, int line)
     {
         foreach (Env scope in Scopes)
         {
@@ -100,23 +111,23 @@ public class Env
             }
         }
         
-        throw new BowNameError($"Function '{name}' not found");
+        throw new BowNameError($"Function '{name}' not found on line {line}");
     }
     
-    public static bool IsFunctionDefined(string name)
+    public static bool IsFunctionDefined(string name, int line)
     {
         try
         {
-            GetFunction(name);
+            GetFunction(name, line);
             return true;
         }
         catch (BowNameError)
         {
-            return false;
+            return FunctionExpression.IsBuiltinFunction(name);
         }
     }
 
-    public static void OutputFunctions()
+    private static void OutputFunctions()
     {
         Console.WriteLine("\nFunctions:");
         foreach (Env scope in Scopes)

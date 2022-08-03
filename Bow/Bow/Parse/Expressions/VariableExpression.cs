@@ -18,9 +18,7 @@ public class VariableExpression : Expression
 
     public override Literal Evaluate()
     {
-        Literal value;
-        
-        value = Env.IsFunctionDefined(_name)
+        Literal value = Env.IsFunctionDefined(_name, _line)
             ? new FunctionExpression(_name, new(), _line).Evaluate()
             : Env.GetVariable(_name).Literal;
 

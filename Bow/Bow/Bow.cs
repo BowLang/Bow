@@ -34,7 +34,7 @@ public class Bow
                     Console.WriteLine(token.Inspect());
                 }
             }
-
+            
             List<Statement> statements = new Parser(tokens).Parse();
             new Interpreter(statements).Interpret(_inShell);
         }
@@ -78,8 +78,7 @@ public class Bow
     public static void RunShell(bool firstCall=true, string lines="")
     {
         if (firstCall) Console.WriteLine("\x1B[1;4mBow Interactive Shell\x1B[0m\n");
-        
-       
+
         string prompt = lines == "" ? "bow" : "   ";
         Console.Write($"\x1B[92m{prompt}>\x1B[0m ");
         
