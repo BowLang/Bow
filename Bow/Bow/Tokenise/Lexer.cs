@@ -40,6 +40,9 @@ public class Lexer
             case ')':
                 AddToken(TokenType.RightBracket);
                 break;
+            case ',':
+                AddToken(TokenType.Comma);
+                break;
             case '+':
                 AddToken(TokenType.Plus);
                 break;
@@ -177,6 +180,11 @@ public class Lexer
             Advance();
             AddToken(TokenType.Assign);
         }
+        else if (Peek() == '-')
+        {
+            Advance();
+            AddToken(TokenType.ReturnArrow);
+        }
         else
         {
             AddToken(TokenType.OpenDeclare);
@@ -202,6 +210,11 @@ public class Lexer
         {
             Advance();
             RightDoubleArrow();
+        }
+        else if (Peek() == '>')
+        {
+            Advance();
+            AddToken(TokenType.FunTypeOpenBlock);
         }
         else
         {
@@ -248,11 +261,13 @@ public class Lexer
     {
         if (Peek() != '|')
         {
-            throw new BowSyntaxError($"Expected '|' on line {_line}");
+            AddToken(TokenType.Seperator);
         }
-        
-        Advance();
-        AddToken(TokenType.Or);
+        else
+        {
+            Advance();
+            AddToken(TokenType.Or);
+        }
     }
 
     private void Str()

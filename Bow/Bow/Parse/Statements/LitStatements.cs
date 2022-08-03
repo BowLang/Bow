@@ -15,7 +15,10 @@ public class LitStatement : Statement
         _line  = line;
     }
 
-    public override void Interpret() { }
+    public override void Interpret()
+    {
+        _valueExpression.Evaluate();
+    }
     
     public override string Interpret(bool lastInShell)
     {

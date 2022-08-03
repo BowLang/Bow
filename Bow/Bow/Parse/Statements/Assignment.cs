@@ -28,7 +28,7 @@ public class Assignment : Statement
             throw new BowSyntaxError($"Unknown variable '{_name}' on line {_line}");
         }
         
-        Symbol symbol = Env.GetVariable(_name);
+        VariableSymbol symbol = Env.GetVariable(_name);
         
         if (symbol.IsConstant)
         {

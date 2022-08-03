@@ -2,14 +2,14 @@
 
 namespace Parse.Environment;
 
-public class Symbol
+public class VariableSymbol
 {
-    public string Name { get;  }
+    public string Name { get; }
     public Literal Literal { get; private set; }
     public int Line { get; }
-    public bool IsConstant { get;  }
+    public bool IsConstant { get; }
 
-    public Symbol(string name, Literal literal, int line, bool isConstant)
+    public VariableSymbol(string name, Literal literal, int line, bool isConstant)
     {
         Name = name;
         Literal = literal;

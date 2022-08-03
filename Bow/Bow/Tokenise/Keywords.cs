@@ -13,7 +13,8 @@ public struct Keywords
         { "false", TokenType.BooLiteral },
         { "if",    TokenType.If         },
         { "alt",   TokenType.Alt        },
-        { "altif", TokenType.AltIf      }
+        { "altif", TokenType.AltIf      },
+        { "fun",   TokenType.Fun        }
     };
 
     public static bool Contains(string key)

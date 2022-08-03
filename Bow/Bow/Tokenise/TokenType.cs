@@ -6,6 +6,9 @@ public struct TokenType
         LeftBracket      = "LEFT_BRACKET",
         RightBracket     = "RIGHT_BRACKET",
         
+        Comma            = "COMMA",
+        Seperator        = "SEPERATOR",
+        
         Plus             = "PLUS",
         Minus            = "MINUS",
         Star             = "STAR",
@@ -27,6 +30,8 @@ public struct TokenType
         DecLiteral       = "DECLITERAL",
         BooLiteral       = "BOOLITERAL",
         
+        NullReturn       = "NULL_RETURN",
+        
         Str              = "STR",
         Dec              = "DEC",
         Boo              = "BOO",
@@ -43,8 +48,13 @@ public struct TokenType
         Alt              = "ALT",
         AltIf            = "ALT_IF",
         
+        Fun              = "FUN",
+        
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",
+        FunTypeOpenBlock = "Fun_Type_Open_Block",
+        
+        ReturnArrow      = "RETURN_ARROW",
         
         EOF              = "EOF";
 }
