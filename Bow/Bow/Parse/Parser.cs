@@ -92,7 +92,7 @@ public class Parser
             {
                 return DeclareStatement(name, Previous().Line);
             }
-            
+
             if (Match(new[] { TokenType.Assign }))
             {
                 return AssignStatement(name, Previous().Line);
@@ -110,12 +110,12 @@ public class Parser
         {
             return FunctionStatement(Previous().Line);
         }
-        
+
         if (Match(new[] { TokenType.ReturnArrow }))
         {
             return ReturnStatement();
         }
-        
+
         if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral, TokenType.LeftBracket }))
         {
             return LiteralStatement(Previous().Line);
@@ -195,14 +195,14 @@ public class Parser
     private Statement AssignStatement(string name, int line)
     {
         Expression valueExpression = GetExpression(Previous().Line);
-        
+
         return new Assignment(name, valueExpression, line);
     }
 
     private Statement IfStatement(int line)
     {
         Expression ifCondition = GetExpression(Previous().Line);
-        
+
         if (!Match(new[] { TokenType.OpenBlock }))
         {
             throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
@@ -220,18 +220,18 @@ public class Parser
     private List<Tuple<Expression, List<Statement>>> AltIfs(int line)
     {
         List<Tuple<Expression, List<Statement>>> altIfs = new();
-        
+
         while (Match(new[] { TokenType.AltIf }))
         {
             Expression altCondition = GetExpression(Previous().Line);
-            
+
             if (!Match(new[] { TokenType.OpenBlock }))
             {
                 throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
             }
-            
+
             List<Statement> altIfStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
-            
+
             altIfs.Add(Tuple.Create(altCondition, altIfStatements));
         }
 
@@ -248,26 +248,26 @@ public class Parser
             {
                 throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
             }
-            
+
             altStatements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
         }
 
         return altStatements;
     }
-    
+
     private Statement FunctionStatement(int line)
     {
         if (!Match(new [] { TokenType.Identifier }))
         {
             throw new BowSyntaxError($"Missing function name on line {line}");
         }
-        
+
         string name = Previous().Literal;
-        
+
         List<Tuple<string, List<string>>> parameters = FunParameters(line);
 
         List<string> returnTypes = new();
-        
+
         if (!Match(new[] { TokenType.OpenBlock }))
         {
             if (Match(new[] { TokenType.Equal }))
@@ -280,9 +280,9 @@ public class Parser
                 }
             }
         }
-        
+
         List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
-        
+
         return new Function(name, parameters, returnTypes, statements, line);
     }
 
@@ -291,7 +291,7 @@ public class Parser
         List<Tuple<string, List<string>>> parameters = new();
 
         if (!Match(new[] { TokenType.LeftBracket })) return parameters;
-        
+
         if (!Match(new[] { TokenType.RightBracket }))
         {
             if (IsAtEnd())
@@ -301,17 +301,17 @@ public class Parser
 
             parameters.Add(GetParameter(line));
         }
-        
+
         while (Match(new[] { TokenType.Comma }))
         {
             if (IsAtEnd())
             {
                 throw new BowEOFError($"Unexpected EOF when looking for parameters on line {line}");
             }
-            
+
             parameters.Add(GetParameter(line));
         }
-        
+
         if (!Match(new[] { TokenType.RightBracket }))
         {
             throw new BowSyntaxError($"Missing ')' on line {line}");
@@ -326,16 +326,16 @@ public class Parser
         {
             throw new BowSyntaxError($"Missing parameter name on line {line}");
         }
-                
+
         string name = Previous().Literal;
-                
+
         if (!Match(new[] { TokenType.Minus }))
         {
             throw new BowSyntaxError($"Missing opening type '-' on line {line}");
         }
 
         List<string> types = GetTypes(line);
-                
+
         if (!Match(new[] { TokenType.Minus }))
         {
             throw new BowSyntaxError($"Missing closing type '-' on line {line}");
@@ -347,12 +347,12 @@ public class Parser
     private List<string> GetTypes(int line)
     {
         List<string> types = new();
-                
+
         if (!Match(new[] { TokenType.Str, TokenType.Dec, TokenType.Boo }))
         {
             throw new BowTypeError($"Unknown type on line {line}");
         }
-                
+
         types.Add(Previous().Type + "LITERAL");
 
         while (Match(new[] { TokenType.Seperator }))
@@ -361,7 +361,7 @@ public class Parser
             {
                 throw new BowTypeError($"Unknown type on line {line}");
             }
-                    
+
             types.Add(Previous().Type + "LITERAL");
         }
 
@@ -371,14 +371,14 @@ public class Parser
     private Statement ReturnStatement()
     {
         Expression returnExpression = GetExpression(Previous().Line, false);
-        
+
         return new Return(returnExpression);
     }
-    
+
     private Statement LiteralStatement(int line)
     {
         Undo();
-        
+
         Expression valueExpression = GetExpression(line);
 
         return new LitStatement(valueExpression, line);
@@ -401,7 +401,7 @@ public class Parser
     private Expression GetOr(int line)
     {
         Expression expression = GetAnd(line);
-        
+
         while (Match(new[] { TokenType.Or }))
         {
             Token op = Previous();
@@ -415,7 +415,7 @@ public class Parser
     private Expression GetAnd(int line)
     {
         Expression expression = GetComparison(line);
-        
+
         while (Match(new[] { TokenType.And }))
         {
             Token op = Previous();
@@ -429,7 +429,7 @@ public class Parser
     private Expression GetComparison(int line)
     {
         Expression expression = GetTerm(line);
-        
+
         while (Match(new[]
                {
                    TokenType.Equal, TokenType.NotEqual, TokenType.LessThan, TokenType.LessThanEqual,
@@ -447,28 +447,28 @@ public class Parser
     private Expression GetTerm(int line)
     {
         Expression expression = GetFactor(line);
-        
+
         while (Match(new[] { TokenType.Plus, TokenType.Minus }))
         {
             Token op = Previous();
             Expression right = GetFactor(line);
             expression = new BinaryExpression(expression, op, right, op.Line);
         }
-        
+
         return expression;
     }
 
     private Expression GetFactor(int line)
     {
         Expression expression = GetUnary(line);
-        
+
         while (Match(new[] { TokenType.Star, TokenType.Slash }))
         {
             Token op = Previous();
             Expression right = GetUnary(line);
             expression = new BinaryExpression(expression, op, right, op.Line);
         }
-        
+
         return expression;
     }
 
@@ -480,7 +480,7 @@ public class Parser
             Expression right = GetUnary(line);
             return new UnaryExpression(op, right, op.Line);
         }
-        
+
         return Primary(line);
     }
 
@@ -490,45 +490,45 @@ public class Parser
         {
             throw new BowEOFError($"Unexpected EOF on line {Peek().Line}");
         }
-        
+
         if (Match(new[] { TokenType.BooLiteral }))
         {
             return new LiteralExpression(new BooLiteral(Previous().Literal), line);
         }
-        
+
         if (Match(new[] { TokenType.DecLiteral }))
         {
             return new LiteralExpression(new DecLiteral(Previous().Literal), line);
         }
-        
+
         if (Match(new[] { TokenType.StrLiteral }))
         {
             return new LiteralExpression(new StrLiteral(Previous().Literal), line);
         }
-        
+
         if (Match(new[] { TokenType.Identifier }))
         {
             string name = Previous().Literal;
-            
+
             if (Match(new[] { TokenType.LeftBracket }))
             {
                 List<Expression> parameters = new();
-                
+
                 if (Peek().Type != TokenType.RightBracket)
                 {
                     parameters.Add(GetExpression(line));
-                    
+
                     while (Match(new[] { TokenType.Comma }))
                     {
                         if (IsAtEnd())
                         {
                             throw new BowEOFError($"Unexpected EOF when looking for parameters on line {line}");
                         }
-                        
+
                         parameters.Add(GetExpression(line));
                     }
                 }
-                
+
                 if (!Match(new[] { TokenType.RightBracket }))
                 {
                     throw new BowSyntaxError($"Missing ')' on line {line}");
@@ -536,19 +536,19 @@ public class Parser
 
                 return new FunctionExpression(name, parameters, Previous().Line);
             }
-            
+
             return new VariableExpression(name, Previous().Line);
         }
-        
+
         if (Match(new[] { TokenType.LeftBracket }))
         {
             Expression expression = GetExpression(line);
-            
+
             if (!Match(new[] { TokenType.RightBracket }))
             {
                 throw new BowEOFError($"Missing ')' on line {Peek().Line}");
             }
-            
+
             return expression;
         }
         
