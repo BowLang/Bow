@@ -24,16 +24,8 @@ public class FunctionExpression : Expression
         FunctionSymbol function = Env.GetFunction(_name);
         
         Dictionary<string, VariableSymbol> parameters = new();
-        
-        if (_parameters.Count < function.Parameters.Count)
-        {
-            throw new BowSyntaxError($"Not enough parameters for function {_name} on line {_line}");
-        }
-        
-        if (_parameters.Count > function.Parameters.Count)
-        {
-            throw new BowSyntaxError($"Too many parameters for function {_name} on line {_line}");
-        }
+
+        CheckParametersLength(function.Parameters);
 
         foreach (var param in _parameters.Select((value, i) => new { i, value }))
         {
@@ -69,19 +61,11 @@ public class FunctionExpression : Expression
             Env.PopScope();
         }
 
-        if (value is null && function.ReturnTypes.Count != 0)
-        {
-            throw new BowTypeError($"Function call unexpectedly did not return anything on line {_line}");
-        }
-
+        CheckReturnTypes(value, function.ReturnTypes);
+        
         if (value is null)
         {
             return new NullReturn();
-        }
-
-        if (!function.ReturnTypes.Contains(value.Type))
-        {
-            throw new BowTypeError($"Function call did not return a correct type on line {_line}");
         }
 
         return value.Type switch
@@ -91,5 +75,36 @@ public class FunctionExpression : Expression
             TokenType.DecLiteral => new DecLiteral(value.Value),
             _ => throw new BowRuntimeError($"Variable expression contains unknown type {value.Type} on line {_line}")
         };
+    }
+
+    private void CheckParametersLength(List<Tuple<string, List<string>>> accepted)
+    {
+        if (_parameters.Count < accepted.Count)
+        {
+            throw new BowSyntaxError($"Not enough parameters for function {_name} on line {_line}");
+        }
+        
+        if (_parameters.Count > accepted.Count)
+        {
+            throw new BowSyntaxError($"Too many parameters for function {_name} on line {_line}");
+        }
+    }
+    
+    private void CheckReturnTypes(Literal? value, List<string> types)
+    {
+        if (value is null && types.Count != 0)
+        {
+            throw new BowTypeError($"Function call unexpectedly did not return anything on line {_line}");
+        }
+        
+        if (value is null)
+        {
+            return;
+        }
+
+        if (!types.Contains(value.Type))
+        {
+            throw new BowTypeError($"Function call did not return a correct type on line {_line}");
+        }
     }
 }
