@@ -33,6 +33,7 @@ public class Bow
                 {
                     Console.WriteLine(token.Inspect());
                 }
+                Console.WriteLine("\n\n");
             }
             
             List<Statement> statements = new Parser(tokens).Parse();

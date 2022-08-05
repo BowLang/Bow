@@ -48,6 +48,11 @@ public struct TokenType
         Alt              = "ALT",
         AltIf            = "ALT_IF",
         
+        Switch           = "SWITCH",
+        Other            = "OTHER",
+        Break            = "BREAK",
+        CaseBranch       = "CASE_BRANCH",
+        
         Fun              = "FUN",
         
         OpenBlock        = "OPEN_BLOCK",
