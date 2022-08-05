@@ -48,7 +48,7 @@ public struct TokenType
         Alt              = "ALT",
         AltIf            = "ALT_IF",
         
-        Case             = "CASE",
+        Switch           = "SWITCH",
         Other            = "OTHER",
         Break            = "BREAK",
         CaseBranch       = "CASE_BRANCH",
