@@ -5,6 +5,7 @@ namespace Parse.Environment;
 
 public class Env
 {
+    public static int NestLevel = 0;
     private static readonly List<Env> Scopes = new() { new Env() };
     private readonly Dictionary<string, VariableSymbol> _variables;
     private readonly Dictionary<string, FunctionSymbol> _functions;
@@ -23,12 +24,22 @@ public class Env
 
     public static void PushScope(Env env)
     {
+        NestLevel++;
         Scopes.Insert(0, env);
     }
     
     public static void PopScope()
     {
+        NestLevel--;
         Scopes.RemoveAt(0);
+    }
+
+    public static void SetNestLevel(int level)
+    {
+        while (NestLevel > level)
+        {
+            PopScope();
+        }
     }
 
     public static void AddVariable(VariableSymbol symbol)
@@ -70,6 +81,11 @@ public class Env
         {
             return false;
         }
+    }
+
+    public static bool IsVariableDefinedLocally(string name)
+    {
+        return Scopes[0]._variables.ContainsKey(name);
     }
 
     private static void OutputVariables()
@@ -141,6 +157,7 @@ public class Env
 
     public static void Output()
     {
+        Console.WriteLine("\n");
         OutputVariables();
         OutputFunctions();
     }

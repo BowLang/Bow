@@ -69,6 +69,8 @@ public class FunctionExpression : Expression
 
         Literal? value = null;
         
+        int nestLevel = Env.NestLevel;
+        
         Env.PushScope(new Env(parameters));
 
         try
@@ -84,7 +86,7 @@ public class FunctionExpression : Expression
         }
         finally
         {
-            Env.PopScope();
+            Env.SetNestLevel(nestLevel);
         }
 
         CheckReturnTypes(value, function.ReturnTypes);

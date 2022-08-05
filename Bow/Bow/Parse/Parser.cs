@@ -115,6 +115,11 @@ public class Parser
         {
             return ReturnStatement();
         }
+        
+        if (Match(new[] { TokenType.Switch }))
+        {
+            return SwitchStatement();
+        }
 
         if (Match(new[] { TokenType.DecLiteral, TokenType.BooLiteral, TokenType.StrLiteral, TokenType.LeftBracket }))
         {
@@ -373,6 +378,74 @@ public class Parser
         Expression returnExpression = GetExpression(Previous().Line, false);
 
         return new Return(returnExpression);
+    }
+
+    private Statement SwitchStatement()
+    {
+        Expression caseExpression = GetExpression(Previous().Line);
+        
+        if (!Match(new[] { TokenType.OpenBlock }))
+        {
+            throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
+        }
+        
+        List<Tuple<List<Expression>, List<Statement>>> cases = GetCases(Previous().Line);
+        List<Statement> other = GetOther(Previous().Line);
+        
+        if (!Match(new[] { TokenType.CloseBlock }))
+        {
+            throw new BowEOFError($"Missing '<==' on line {Previous().Line}");
+        }
+        
+        return new Switch(caseExpression, cases, other, Previous().Line);
+    }
+    
+    private List<Tuple<List<Expression>, List<Statement>>> GetCases(int line)
+    {
+        List<Tuple<List<Expression>, List<Statement>>> cases = new();
+
+        while (true)
+        {
+            List<Expression> caseExpressions = new();
+            
+            try
+            {
+                caseExpressions.Add(GetExpression(line));
+            }
+            catch (BowSyntaxError)
+            {
+                return cases;
+            }
+
+            while (Match(new[] { TokenType.Seperator }))
+            {
+                caseExpressions.Add(GetExpression(line));
+            }
+
+            if (!Match(new[] { TokenType.CaseBranch }))
+            {
+                throw new BowSyntaxError($"Missing case branch arrow on line {line}");
+            }
+            
+            List<Statement> statements = GetStatementBlock(new[] { TokenType.Break }, line); 
+            
+            cases.Add(Tuple.Create(caseExpressions, statements));
+        }
+    }
+    
+    private List<Statement> GetOther(int line)
+    {
+        if (!Match(new[] { TokenType.Other }))
+        {
+            return new();
+        }
+
+        if (!Match(new[] { TokenType.CaseBranch }))
+        {
+            throw new BowSyntaxError($"Missing case branch arrow on line {line}");
+        }
+        
+        return GetStatementBlock(new[] { TokenType.Break }, line);
     }
 
     private Statement LiteralStatement(int line)

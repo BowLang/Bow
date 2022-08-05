@@ -27,7 +27,7 @@ public class Declaration : Statement
     {
         Literal value = _valueExpression.Evaluate();
 
-        if (Env.IsVariableDefined(_name))
+        if (Env.IsVariableDefinedLocally(_name))
         {
             throw new BowSyntaxError($"Can't re-declare variable '{_name}' on line {_line}");
         }
