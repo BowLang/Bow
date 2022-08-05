@@ -79,6 +79,9 @@ public class Lexer
             case '|':
                 Or();
                 break;
+            case '?':
+                Question();
+                break;
             case ' ': case '\r': case '\t':
                 break;
             case '\n':
@@ -268,6 +271,28 @@ public class Lexer
             Advance();
             AddToken(TokenType.Or);
         }
+    }
+    
+    private void Question()
+    {
+        if (Peek() != '-')
+        {
+            throw new BowSyntaxError($"'Malformed case branch arrow on line {_line}");
+        }
+        
+        Advance();
+        CaseBranch();
+    }
+
+    private void CaseBranch()
+    {
+        if (Peek() != '>')
+        {
+            throw new BowSyntaxError($"'Malformed case branch arrow on line {_line}");
+        }
+        
+        Advance();
+        AddToken(TokenType.CaseBranch);
     }
 
     private void Str()

@@ -14,6 +14,9 @@ public struct Keywords
         { "if",    TokenType.If         },
         { "alt",   TokenType.Alt        },
         { "altif", TokenType.AltIf      },
+        { "case",  TokenType.Case       },
+        { "other", TokenType.Other      },
+        { "break", TokenType.Break      },
         { "fun",   TokenType.Fun        }
     };
 
