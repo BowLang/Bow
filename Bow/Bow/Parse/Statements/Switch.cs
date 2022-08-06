@@ -26,24 +26,50 @@ public class Switch : Statement
     {
         Literal switchExpression = _switchExpression.Evaluate();
 
-        try
+        int count = 0;
+        bool match = false;
+        bool escaped = false;
+        while (count < _cases.Count)
         {
-            foreach (var caseTuple in from caseTuple in _cases
-                     from caseExpression in caseTuple.Item1
-                     let caseLiteral = caseExpression.Evaluate()
-                     where caseLiteral.Value == switchExpression.Value
-                     select caseTuple)
+            var (comparisons, statements) = _cases[count];
+            
+            foreach (Expression comparison in comparisons)
             {
-                InterpretBranch(caseTuple.Item2);
-                return;
+                Literal comparisonLiteral = comparison.Evaluate();
+                if (comparisonLiteral.Type != switchExpression.Type)
+                {
+                    throw new BowTypeError($"Cannot compare {comparisonLiteral.Type} with {switchExpression.Type} on line {_line}");
+                }
+                
+                if (match || comparisonLiteral.Value == switchExpression.Value)
+                {
+                    try
+                    {
+                        InterpretBranch(statements);
+                    }
+                    catch (BowBreak)
+                    {
+                        escaped = true;
+                    }
+
+                    match = true;
+                    break;
+                }
             }
-        }
-        catch (RuntimeBinderException)
-        {
-            throw new BowTypeError($"Cannot compare different types in switch statement on line {_line}");
+
+            if (escaped) break;
+            
+            count++;
         }
 
-        InterpretBranch(_other);
+        if (!escaped)
+        {
+            try
+            {
+                InterpretBranch(_other);
+            }
+            catch (BowBreak) { }
+        }
     }
 
     private void InterpretBranch(List<Statement> statements)

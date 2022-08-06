@@ -115,6 +115,11 @@ public class Parser
         {
             return ReturnStatement();
         }
+
+        if (Match(new[] { TokenType.Break }))
+        {
+            return new Break(Previous().Line);
+        }
         
         if (Match(new[] { TokenType.Switch }))
         {
@@ -150,6 +155,61 @@ public class Parser
         }
 
         return statementList;
+    }
+    
+    private List<Statement> GetCaseStatementBlock(int line)
+    {
+        List<Statement> statementList = new();
+
+        while (!IsAtEnd() && !EndOfCaseBlock())
+        {
+            statementList.Add(GetStatement());
+        }
+
+        string[] terminators =
+        {
+            TokenType.CloseBlock, TokenType.Identifier, TokenType.BooLiteral, TokenType.StrLiteral,
+            TokenType.DecLiteral, TokenType.Other
+        };
+        
+        if (!terminators.Contains(Peek().Type))
+        {
+            throw new BowEOFError($"Unexpected EOF while looking for end of switch branch on line {line}");
+        }
+
+        if (statementList.Count == 0)
+        {
+            throw new BowSyntaxError($"Empty statement block on line {line}");
+        }
+
+        return statementList;
+    }
+
+    private bool EndOfCaseBlock()
+    {
+        if (Match(new[] { TokenType.CloseBlock }))
+        {
+            Undo();
+            return true;
+        }
+
+        if (Match(new[]
+            {
+                TokenType.Identifier, TokenType.BooLiteral, TokenType.StrLiteral, TokenType.DecLiteral, TokenType.Other
+            }))
+        {
+            if (Match(new[] { TokenType.CaseBranch }))
+            {
+                Undo();
+                Undo();
+                return true;
+            }
+            
+            Undo();
+            return false;
+        }
+
+        return false;
     }
 
     private Statement DeclareStatement(string name, int line)
@@ -404,18 +464,11 @@ public class Parser
     {
         List<Tuple<List<Expression>, List<Statement>>> cases = new();
 
-        while (true)
+        while (Peek().Type != TokenType.Other && Peek().Type != TokenType.CloseBlock)
         {
             List<Expression> caseExpressions = new();
             
-            try
-            {
-                caseExpressions.Add(GetExpression(line));
-            }
-            catch (BowSyntaxError)
-            {
-                return cases;
-            }
+            caseExpressions.Add(GetExpression(line));
 
             while (Match(new[] { TokenType.Seperator }))
             {
@@ -427,10 +480,12 @@ public class Parser
                 throw new BowSyntaxError($"Missing case branch arrow on line {line}");
             }
             
-            List<Statement> statements = GetStatementBlock(new[] { TokenType.Break }, line); 
+            List<Statement> statements = GetCaseStatementBlock(line); 
             
             cases.Add(Tuple.Create(caseExpressions, statements));
         }
+
+        return cases;
     }
     
     private List<Statement> GetOther(int line)
@@ -445,7 +500,9 @@ public class Parser
             throw new BowSyntaxError($"Missing case branch arrow on line {line}");
         }
         
-        return GetStatementBlock(new[] { TokenType.Break }, line);
+        List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock }, line);
+        Undo(); // Get back the <== for checking
+        return statements;
     }
 
     private Statement LiteralStatement(int line)
