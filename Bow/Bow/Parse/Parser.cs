@@ -466,9 +466,7 @@ public class Parser
 
         while (Peek().Type != TokenType.Other && Peek().Type != TokenType.CloseBlock)
         {
-            List<Expression> caseExpressions = new();
-            
-            caseExpressions.Add(GetExpression(line));
+            List<Expression> caseExpressions = new() { GetExpression(line) };
 
             while (Match(new[] { TokenType.Seperator }))
             {
