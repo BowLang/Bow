@@ -7,7 +7,7 @@ public struct TokenType
         RightBracket     = "RIGHT_BRACKET",
         
         Comma            = "COMMA",
-        Seperator        = "SEPERATOR",
+        Separator        = "SEPARATOR",
         
         Plus             = "PLUS",
         Minus            = "MINUS",

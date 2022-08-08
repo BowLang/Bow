@@ -264,7 +264,7 @@ public class Lexer
     {
         if (Peek() != '|')
         {
-            AddToken(TokenType.Seperator);
+            AddToken(TokenType.Separator);
         }
         else
         {

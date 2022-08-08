@@ -420,7 +420,7 @@ public class Parser
 
         types.Add(Previous().Type + "LITERAL");
 
-        while (Match(new[] { TokenType.Seperator }))
+        while (Match(new[] { TokenType.Separator }))
         {
             if (!Match(new[] { TokenType.Str, TokenType.Dec, TokenType.Boo }))
             {
@@ -468,7 +468,7 @@ public class Parser
         {
             List<Expression> caseExpressions = new() { GetExpression(line) };
 
-            while (Match(new[] { TokenType.Seperator }))
+            while (Match(new[] { TokenType.Separator }))
             {
                 caseExpressions.Add(GetExpression(line));
             }
