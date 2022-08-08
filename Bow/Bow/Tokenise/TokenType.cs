@@ -55,6 +55,13 @@ public struct TokenType
         
         Fun              = "FUN",
         
+        Obj              = "OBJ",
+        Pub              = "PUB",
+        Pri              = "PRI",
+        Stat             = "STAT",
+        Meth             = "METH",
+        InstanceVar      = "INSTANCE_VAR",
+
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",
         FunTypeOpenBlock = "Fun_Type_Open_Block",

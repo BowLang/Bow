@@ -82,6 +82,9 @@ public class Lexer
             case '?':
                 Question();
                 break;
+            case '#':
+                Hash();
+                break;
             case ' ': case '\r': case '\t':
                 break;
             case '\n':
@@ -92,7 +95,7 @@ public class Lexer
                 {
                     Dec();
                 }
-                else if (Char.IsLetter(C))
+                else if (Char.IsLetter(C) || C == '_')
                 {
                     Identifier();
                 }
@@ -295,6 +298,27 @@ public class Lexer
         AddToken(TokenType.CaseBranch);
     }
 
+    private void Hash()
+    {
+        char c = Peek();
+        if (!Char.IsLetter(c) && c != '_')
+        {
+            throw new BowSyntaxError($"Unexpected # on line {_line}");
+        }
+
+        InstanceVariable();
+    }
+    
+    private void InstanceVariable()
+    {
+        while (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+        {
+            Advance();
+        }
+        
+        AddToken(TokenType.InstanceVar);
+    }
+
     private void Str()
     {
         char type = _code[_current - 1];
@@ -349,13 +373,6 @@ public class Lexer
         
         string identifier = _code[_start.._current];
 
-        if (Keywords.Contains(identifier))
-        {
-            AddToken(Keywords.GetTokenType(identifier), identifier);
-        }
-        else
-        {
-            AddToken(TokenType.Identifier, identifier);
-        }
+        AddToken(Keywords.Contains(identifier) ? Keywords.GetTokenType(identifier) : TokenType.Identifier, identifier);
     }
 }

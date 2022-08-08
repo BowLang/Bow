@@ -17,7 +17,12 @@ public struct Keywords
         { "switch", TokenType.Switch     },
         { "other",  TokenType.Other      },
         { "break",  TokenType.Break      },
-        { "fun",    TokenType.Fun        }
+        { "fun",    TokenType.Fun        },
+        { "obj",    TokenType.Obj        },
+        { "pub",    TokenType.Pub        },
+        { "pri",    TokenType.Pri        },
+        { "stat",   TokenType.Stat       },
+        { "meth",   TokenType.Meth       }
     };
 
     public static bool Contains(string key)
