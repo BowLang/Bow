@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Expressions;
-using Parse.Expressions.Literals;
+using Parse.Expressions.ObjInstances;
 
 
 namespace Parse.Statements;
@@ -16,12 +16,12 @@ public class Return : Statement
 
     public override void Interpret()
     {
-        Literal? literal = null;
+        ObjInstance returnedValue = new NullInstance();
         if (_expression is not null)
         {
-            literal = _expression.Evaluate();
+            returnedValue = _expression.Evaluate();
         }
 
-        throw new BowReturn(literal);
+        throw new BowReturn(returnedValue);
     }
 }

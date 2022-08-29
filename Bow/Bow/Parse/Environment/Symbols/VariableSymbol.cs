@@ -1,24 +1,24 @@
-﻿using Parse.Expressions.Literals;
+﻿using Parse.Expressions.ObjInstances;
 
 namespace Parse.Environment;
 
 public class VariableSymbol
 {
     public string Name { get; }
-    public Literal Literal { get; private set; }
+    public ObjInstance Object { get; private set; }
     public int Line { get; }
     public bool IsConstant { get; }
 
-    public VariableSymbol(string name, Literal literal, int line, bool isConstant)
+    public VariableSymbol(string name, ObjInstance obj, int line, bool isConstant)
     {
         Name = name;
-        Literal = literal;
+        Object = obj;
         Line = line;
         IsConstant = isConstant;
     }
 
-    public void SetValue(Literal newValue)
+    public void SetValue(ObjInstance newValue)
     {
-        Literal = newValue;
+        Object = newValue;
     }
 }

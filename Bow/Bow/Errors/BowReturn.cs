@@ -1,22 +1,14 @@
-﻿using Parse.Expressions.Literals;
+﻿using Parse.Expressions.ObjInstances;
 
 namespace Errors;
 
 [Serializable]
 public class BowReturn : Exception
 {
-    public Literal? Literal { get; } 
-    
-    public BowReturn() : base() { }
-    public BowReturn(string message) : base(message) { }
-    public BowReturn(string message, Exception inner) : base(message, inner) { }
+    public ObjInstance Object { get; }
 
-    public BowReturn(Literal? literal) : base()
+    public BowReturn(ObjInstance obj)
     {
-        Literal = literal;
-        
+        Object = obj;
     }
-    
-    protected BowReturn(System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }

@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
 using Errors;
-using Tokenise;
 using Parse.Statements;
 using Parse.Environment;
-using Parse.Expressions.Literals;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Expressions;
 
@@ -20,54 +19,64 @@ public class FunctionExpression : Expression
         _line = line;
     }
     
-    public override Literal Evaluate()
+    public override ObjInstance Evaluate()
     {
         bool isBuiltin = IsBuiltinFunction(_name);
-
-        return ExecuteFunction(isBuiltin);
-    }
-    
-    private void CheckParametersLength(List<Tuple<string, List<string>>> accepted)
-    {
-        if (_parameters.Count < accepted.Count)
+        
+        if (isBuiltin || Env.IsFunctionDefined(_name, _line))
         {
-            throw new BowSyntaxError($"Not enough parameters for function {_name} on line {_line}");
+            return ExecuteFunction(isBuiltin);
         }
         
-        if (_parameters.Count > accepted.Count)
-        {
-            throw new BowSyntaxError($"Too many parameters for function {_name} on line {_line}");
-        }
-    }
-    
-    private Literal ExecuteFunction(bool isBuiltin)
-    {
-        return isBuiltin ? ExecuteBuiltinFunction() : ExecuteUserFunction();
+        return ExecuteMethod();
     }
 
-    private Literal ExecuteUserFunction()
+    private ObjInstance ExecuteMethod()
     {
+        if (Env.CurrentInstanceObj is null)
+        {
+            throw new BowNameError($"Could not find function '{_name}' on line {_line}");
+        }
+        
+        return Env.CurrentInstanceObj.ExecuteMethod(_name, _parameters, _line);
+    }
+    
+    private ObjInstance ExecuteFunction(bool isBuiltin)
+    {
+        if (isBuiltin)
+        {
+            return ExecuteBuiltinFunction();
+        }
+        
         FunctionSymbol function = Env.GetFunction(_name, _line);
         
-        CheckParametersLength(function.Parameters);
+        return ExecuteUserFunction(function.Parameters, function.ReturnTypes, function.Statements);
+    }
+
+    private ObjInstance ExecuteUserFunction(List<Tuple<string, List<string>>> expectedParameters, List<string> returnTypes,
+        List<Statement> statements, bool isMethod = false)
+    {
+        string type = isMethod ? "method" : "function";
+        
+        CheckParametersLength(expectedParameters);
         
         Dictionary<string, VariableSymbol> parameters = new();
         
         foreach (var param in _parameters.Select((value, i) => new { i, value }))
         {
-            Literal paramLiteral = param.value.Evaluate();
+            ObjInstance paramObj = param.value.Evaluate();
 
-            string name = function.Parameters[param.i].Item1;
+            string name = expectedParameters[param.i].Item1;
             
-            if (!function.Parameters[param.i].Item2.Contains(paramLiteral.Type))
+            if (!InTypeList(expectedParameters[param.i].Item2, paramObj))
             {
-                throw new BowSyntaxError($"Incorrect type for parameter '{name}' of function '{_name}' on line {_line}");
+                throw new BowSyntaxError($"Incorrect type for parameter '{name}' of {type} '{_name}' on line {_line}");
             }
             
-            parameters.Add(name, new VariableSymbol(name, paramLiteral, _line, false));
+            parameters.Add(name, new VariableSymbol(name, paramObj, _line, false));
         }
 
-        Literal? value = null;
+        ObjInstance value = new NullInstance();
         
         int nestLevel = Env.NestLevel;
         
@@ -75,74 +84,103 @@ public class FunctionExpression : Expression
 
         try
         {
-            foreach (Statement statement in function.Statements)
+            foreach (Statement statement in statements)
             {
                 statement.Interpret();
             }
         }
         catch (BowReturn ex)
         {
-            value = ex.Literal;
+            value = ex.Object;
         }
         finally
         {
             Env.SetNestLevel(nestLevel);
         }
 
-        CheckReturnTypes(value, function.ReturnTypes);
-        
-        if (value is null)
-        {
-            return new NullReturn();
-        }
+        CheckReturnTypes(value, returnTypes, type);
 
-        return value.Type switch
+        return value;
+    }
+
+    private void CheckParametersLength(List<Tuple<string, List<string>>> accepted)
+    {
+        if (_parameters.Count < accepted.Count)
         {
-            TokenType.StrLiteral => new StrLiteral(value.Value),
-            TokenType.BooLiteral => new BooLiteral(value.Value),
-            TokenType.DecLiteral => new DecLiteral(value.Value),
-            _ => throw new BowRuntimeError($"Variable expression contains unknown type {value.Type} on line {_line}")
-        };
+            throw new BowSyntaxError($"Not enough parameters for {_name} on line {_line}");
+        }
+        
+        if (_parameters.Count > accepted.Count)
+        {
+            throw new BowSyntaxError($"Too many parameters for {_name} on line {_line}");
+        }
     }
     
-    private void CheckReturnTypes(Literal? value, List<string> types)
+    private void CheckReturnTypes(ObjInstance value, List<string> types, string type)
     {
-        if (value is null && types.Count != 0)
+        string titledType = type[0].ToString().ToUpper() + type[1..^1];
+        
+        if (new NullInstance().AcceptsType(value) && types.Count != 0)
         {
-            throw new BowTypeError($"Function call unexpectedly did not return anything on line {_line}");
+            throw new BowTypeError(
+                $"{titledType} call unexpectedly did not return anything on line {_line}");
         }
         
-        if (value is null)
+        if (new NullInstance().AcceptsType(value))
         {
             return;
         }
 
-        if (!types.Contains(value.Type))
+        if (!InTypeList(types, value))
         {
-            throw new BowTypeError($"Function call did not return a correct type on line {_line}");
+            throw new BowTypeError($"{titledType} call did not return a correct type on line {_line}");
         }
     }
 
-    private Literal ExecuteBuiltinFunction()
+    private bool InTypeList(List<string> types, ObjInstance obj)
     {
-        Type builtins = typeof(Builtins);
+        foreach (ObjectSymbol type in StringsToObjectSymbols(types))
+        {
+            if (obj.IsAcceptedBy(type))
+            {
+                return true;
+            }
+        }
 
+        return false;
+    }
+
+    private List<ObjectSymbol> StringsToObjectSymbols(List<string> rTypes)
+    {
+        List<ObjectSymbol> returnTypes = new();
+
+        foreach (string type in rTypes)
+        {
+            returnTypes.Add(Env.GetObject(type, _line));
+        }
+
+        return returnTypes;
+    }
+
+    private ObjInstance ExecuteBuiltinFunction()
+    {
         const BindingFlags flags = BindingFlags.InvokeMethod |
                                    BindingFlags.Public |
                                    BindingFlags.Static;
         
-        MethodInfo? func = builtins.GetMethod(_name, flags);
+        MethodInfo? func =  typeof(Builtins).GetMethod(_name, flags);
 
         if (func == null)
         {
             throw new BowNameError($"Unknown function '{_name}' on line {_line}");
         }
         
-        object[] parameters = _parameters.Select(param => param.Evaluate().Value).ToArray();
+        object[] parameters = _parameters.Select(param => param.Evaluate()).ToArray<object>();
 
         try
         {
-            return (Literal)(func.Invoke(null, parameters) ?? new NullReturn());
+            Builtins.Line = _line;
+            return (ObjInstance)(func.Invoke(null, parameters) ?? new NullInstance());
         }
         catch (TargetParameterCountException)
         {
@@ -157,7 +195,7 @@ public class FunctionExpression : Expression
     public static bool IsBuiltinFunction(string name)
     {
         const BindingFlags flags = BindingFlags.InvokeMethod |
-                                   BindingFlags.Public |
+                                   BindingFlags.Public | 
                                    BindingFlags.Static;
         
         MethodInfo? func = typeof(Builtins).GetMethod(name, flags);
@@ -168,15 +206,40 @@ public class FunctionExpression : Expression
 
 public class Builtins
 {
-    public static Literal output(string value)
+    public static int Line { get; set; }
+    
+    public static ObjInstance output(ObjInstance value)
     {
-        Console.WriteLine(value);
-        return new NullReturn();
+        value = value.ExecuteMethod("to_str", new List<Expression>(), Line);
+
+        if (value.GetType() != typeof(StrInstance))
+        {
+            throw new BowTypeError($"Object's ::to_str implementation did not return a str object on line {Line}");
+        }
+
+        string str = ((StrInstance)value).Value;
+        
+        Console.WriteLine(str);
+        return new NullInstance();
     }
     
-    public static Literal input(string message="")
+    public static ObjInstance input(ObjInstance? message=null)
     {
-        Console.Write(message);
-        return new StrLiteral(Console.ReadLine() ?? "");
+        string str = "";
+        
+        if (message is not null)
+        {
+            message = message.ExecuteMethod("to_str", new List<Expression>(), Line);
+
+            if (message.GetType() != typeof(StrInstance))
+            {
+                throw new BowTypeError($"Object's ::to_str implementation did not return a str object on line {Line}");
+            }
+
+            str = ((StrInstance)message).Value;
+        }
+        
+        Console.Write(str);
+        return new StrInstance(Console.ReadLine() ?? "", Line);
     }
 }

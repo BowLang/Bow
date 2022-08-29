@@ -1,17 +1,22 @@
 ﻿using Errors;
 using Parse.Expressions;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Environment;
 
 public class Env
 {
-    public static int NestLevel = 0;
+    public static int NestLevel;
+    public static ObjectSymbol? CurrentObj { get; set; }
+    public static ObjInstance? CurrentInstanceObj { get; set; }
     private static readonly List<Env> Scopes = new() { new Env() };
+    private readonly Dictionary<string, ObjectSymbol>   _objects;
     private readonly Dictionary<string, VariableSymbol> _variables;
     private readonly Dictionary<string, FunctionSymbol> _functions;
 
     public Env()
     {
+        _objects = new Dictionary<string, ObjectSymbol>();
         _variables = new Dictionary<string, VariableSymbol>();
         _functions = new Dictionary<string, FunctionSymbol>();
     }
@@ -19,6 +24,7 @@ public class Env
     public Env(Dictionary<string, VariableSymbol> variables)
     {
         _variables = variables;
+        _objects   = new Dictionary<string, ObjectSymbol>();
         _functions = new Dictionary<string, FunctionSymbol>();
     }
 
@@ -95,7 +101,7 @@ public class Env
         {
             foreach (KeyValuePair<string, VariableSymbol> pair in scope._variables)
             {
-                string value = pair.Value.Literal.DisplayValue;
+                string value = pair.Value.Object.DisplayValue();
                 
                 Console.WriteLine($"{pair.Key} = {value}");
             }
@@ -154,11 +160,105 @@ public class Env
             }
         }
     }
+    
+    public static void AddObject(ObjectSymbol symbol)
+    {
+        Env scope = Scopes[0];
+        
+        if (!scope._objects.ContainsKey(symbol.Name))
+        {
+            scope._objects.Add(symbol.Name, symbol);
+        }
+    }
+    
+    public static ObjectSymbol GetObject(string name, int line)
+    {
+        foreach (Env scope in Scopes)
+        {
+            if (scope._objects.ContainsKey(name))
+            {
+                return scope._objects[name];
+            }
+        }
+        
+        throw new BowNameError($"Object '{name}' not found on line {line}");
+    }
+    
+    public static bool IsObjectDefined(string name, int line)
+    {
+        try
+        {
+            GetObject(name, line);
+            return true;
+        }
+        catch (BowNameError)
+        {
+            return false;
+        }
+    }
+
+    public static UserObjInstance InstanciateUserObject(ObjectSymbol symbol, List<Expression> parameters, int line)
+    {
+        return new UserObjInstance(symbol, parameters, line);
+    }
+
+    private static void OutputObjects()
+    {
+        //Dictionary<string, Dictionary<string, AttributeSymbol>> staticAttributes = ObjectSymbol.StaticAttributes;
+        //Dictionary<string, Dictionary<string, MethodSymbol>> staticMethods = ObjectSymbol.StaticMethods;
+        
+        Console.WriteLine("\nObjects:");
+        foreach (Env scope in Scopes)
+        {
+            foreach (KeyValuePair<string, ObjectSymbol> pair in scope._objects)
+            {
+                if (pair.Value.Attributes.Count != 0)
+                {
+                    Console.WriteLine($"  {pair.Key}:\n    Attributes:");
+                    foreach (KeyValuePair<string, AttributeSymbol> attribute in pair.Value.Attributes)
+                    {
+                        string visibility = attribute.Value.IsPrivate ? "private" : "public";
+                        Console.WriteLine($"      {visibility} {attribute.Key}");
+                    }
+                }
+                
+                /*if (staticAttributes[pair.Key].Keys.Count != 0)
+                {
+                    Console.WriteLine($"{pair.Key}:\n    Static Attributes:");
+                    foreach (KeyValuePair<string, AttributeSymbol> attribute in staticAttributes[pair.Key])
+                    {
+                        Console.WriteLine(
+                            $"      {attribute.Value.Visibility} {attribute.Key} = {attribute.Value.Literal.DisplayValue}");
+                    }
+                }*/
+
+                if (pair.Value.Methods.Count != 0)
+                {
+                    Console.WriteLine("\n    Methods:");
+                    foreach (KeyValuePair<string, MethodSymbol> method in pair.Value.Methods)
+                    {
+                        string visibility = method.Value.IsPrivate ? "private" : "public";
+                        Console.WriteLine($"      {visibility} {method.Key}");
+                    }
+                }
+                
+                /*if (staticMethods[pair.Key].Keys.Count != 0)
+                {
+                    Console.WriteLine("\n    Static Methods:");
+                    foreach (KeyValuePair<string, MethodSymbol> method in staticMethods[pair.Key])
+                    {
+                        Console.WriteLine($"      {method.Value.Visibility} {method.Key}");
+                    }
+                }*/
+            }
+        }
+    }
 
     public static void Output()
     {
         Console.WriteLine("\n");
         OutputVariables();
         OutputFunctions();
+        OutputObjects();
     }
 }

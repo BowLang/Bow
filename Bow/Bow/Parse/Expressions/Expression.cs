@@ -1,10 +1,10 @@
-﻿using Parse.Expressions.Literals;
+﻿using Parse.Expressions.ObjInstances;
 
 namespace Parse.Expressions;
 
 public class Expression
 {
-    public virtual Literal Evaluate()
+    public virtual ObjInstance Evaluate()
     {
         throw new NotImplementedException();
     }

@@ -3,7 +3,7 @@
 [Serializable]
 public class BowBreak : Exception
 {
-    public BowBreak() : base() { }
+    public BowBreak() { }
     public BowBreak(string message) : base(message) { }
     public BowBreak(string message, Exception inner) : base(message, inner) { }
     

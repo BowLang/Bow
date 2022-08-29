@@ -1,28 +1,68 @@
 ﻿using Errors;
-using Tokenise;
 using Parse.Environment;
 using Parse.Expressions;
-using Parse.Expressions.Literals;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Statements;
 
 public class Assignment : Statement
 {
     private readonly string _name;
+    private readonly bool _isAttribute;
     private readonly Expression _valueExpression;
     private readonly int _line;
     
-    public Assignment(string name, Expression valueExpression, int line)
+    public Assignment(string name, Expression valueExpression, bool isAttribute, int line)
     {
         _name  = name;
+        _isAttribute = isAttribute;
         _valueExpression = valueExpression;
         _line  = line;
     }
 
     public override void Interpret()
     {
-        Literal value = _valueExpression.Evaluate();
+        ObjInstance newValue = _valueExpression.Evaluate();
 
+        if (_isAttribute)
+        {
+            AssignAttribute(newValue);
+        }
+        else
+        {
+            AssignVariable(newValue);
+        }
+    }
+
+    private void AssignAttribute(ObjInstance newValue)
+    {
+        ObjInstance? obj = Env.CurrentInstanceObj;
+
+        if (obj is null)
+        {
+            throw new BowSyntaxError($"Cannot access attribute {_name} outside of an object on line {_line}");
+        }
+        
+        AttributeSymbol attribute = obj.GetAttribute(_name, _line);
+        
+        ObjInstance oldValue = attribute.Object;
+
+        if (attribute.IsConstant && oldValue.GetType() != typeof(NullInstance))
+        {
+            throw new BowSyntaxError($"Cannot re-assign to constant attribute {_name} on line {_line}");
+        }
+
+        if (!attribute.Type.AcceptsType(newValue.Object))
+        {
+            throw new BowTypeError(
+                $"Can't assign {newValue.DisplayName()} to attribute of type {attribute.Type.DisplayName()} on line {_line}");
+        }
+        
+        attribute.SetValue(newValue);
+    }
+
+    private void AssignVariable(ObjInstance newValue)
+    {
         if (!Env.IsVariableDefined(_name))
         {
             throw new BowSyntaxError($"Unknown variable '{_name}' on line {_line}");
@@ -35,21 +75,13 @@ public class Assignment : Statement
             throw new BowSyntaxError($"Cannot assign to constant '{_name}' on line {_line}");
         }
         
-        Literal oldValue = symbol.Literal;
+        ObjInstance oldValue = symbol.Object;
 
-        if (oldValue.Type != value.Type)
+        if (!oldValue.AcceptsType(newValue))
         {
             throw new BowTypeError(
-                $"Can't assign {value.Type} to variable of type {oldValue.Type[..3]} on line {_line}");
+                $"Can't assign {newValue.DisplayName()} to variable of type {oldValue.DisplayName()} on line {_line}");
         }
-
-        Literal newValue = oldValue.Type switch
-        {
-            TokenType.BooLiteral => new BooLiteral(value.Value),
-            TokenType.DecLiteral => new DecLiteral(value.Value),
-            TokenType.StrLiteral => new StrLiteral(value.Value),
-            _ => throw new BowRuntimeError($"Current symbol type is incorrect on line {_line}")
-        };
 
         symbol.SetValue(newValue);
     }
@@ -58,6 +90,6 @@ public class Assignment : Statement
     {
         Interpret();
         
-        return lastInShell ? Env.GetVariable(_name).Literal.DisplayValue : "";
+        return lastInShell ? Env.GetVariable(_name).Object.DisplayValue() : "";
     }
 }

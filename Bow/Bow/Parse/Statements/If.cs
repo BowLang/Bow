@@ -1,8 +1,7 @@
 ﻿using Errors;
 using Parse.Expressions;
 using Parse.Environment;
-using Parse.Expressions.Literals;
-using Tokenise;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Statements;
 
@@ -26,16 +25,19 @@ public class If : Statement
 
     public override void Interpret()
     {
-        Literal condition = _ifCondition.Evaluate();
+        ObjInstance condition = _ifCondition.Evaluate();
 
-        if (condition.Type != TokenType.BooLiteral)
+        if (!new BooInstance(true, _line).AcceptsType(condition))
         {
-            throw new BowTypeError($"If condition must be a boolean, but was {condition.Type} on line {_line}");
+            throw new BowTypeError(
+                $"If condition must be a boolean, but was {condition.DisplayName()} on line {_line}");
         }
+
+        BooInstance boo = (BooInstance)condition;
         
         // If statement
 
-        if (condition.Value)
+        if (boo.Value)
         {
             InterpretBranch(_ifStatements);
             return;
@@ -45,19 +47,20 @@ public class If : Statement
         
         foreach (var (altIfCondition, altIfStatements) in _altIfs)
         {
-            Literal evalledAltIfCondition = altIfCondition.Evaluate();
+            ObjInstance evalledAltIfCondition = altIfCondition.Evaluate();
 
-            if (evalledAltIfCondition.Type != TokenType.BooLiteral)
+            if (!new BooInstance(true, _line).AcceptsType(evalledAltIfCondition))
             {
                 throw new BowTypeError(
-                    $"AltIf condition must be a boolean, but was {evalledAltIfCondition.Type} on line {_line}");
+                    $"AltIf condition must be a boolean, but was {evalledAltIfCondition.DisplayName()} on line {_line}");
             }
             
-            if (evalledAltIfCondition.Value)
-            {
-                InterpretBranch(altIfStatements);
-                return;
-            }
+            BooInstance altIfBoo = (BooInstance)evalledAltIfCondition;
+
+            if (!altIfBoo.Value) continue;
+            
+            InterpretBranch(altIfStatements);
+            return;
         }
         
         // Alt statement
@@ -65,7 +68,7 @@ public class If : Statement
         InterpretBranch(_altStatements);
     }
 
-    private void InterpretBranch(List<Statement> statements)
+    private static void InterpretBranch(List<Statement> statements)
     {
         Env.PushScope(new Env());
 

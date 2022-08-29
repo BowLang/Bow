@@ -30,9 +30,9 @@ public class Lexer
 
     private void ScanToken()
     {
-        char C = Advance();
+        char c = Advance();
         
-        switch (C)
+        switch (c)
         {
             case '(':
                 AddToken(TokenType.LeftBracket);
@@ -85,23 +85,26 @@ public class Lexer
             case '#':
                 Hash();
                 break;
+            case ':':
+                Colon();
+                break;
             case ' ': case '\r': case '\t':
                 break;
             case '\n':
                 _line++;
                 break;
             default:
-                if (Char.IsDigit(C))
+                if (Char.IsDigit(c))
                 {
                     Dec();
                 }
-                else if (Char.IsLetter(C) || C == '_')
+                else if (Char.IsLetter(c) || c == '_')
                 {
                     Identifier();
                 }
                 else
                 {
-                    throw new BowSyntaxError($"Unrecognised character {C} on line {_line}");
+                    throw new BowSyntaxError($"Unrecognised character {c} on line {_line}");
                 }
                 break;
         }
@@ -114,10 +117,10 @@ public class Lexer
 
     private char Advance()
     {
-        char C = _code[_current];
+        char c = _code[_current];
         _current++;
 
-        return C;
+        return c;
     }
 
     private bool IsAtEnd()
@@ -141,6 +144,10 @@ public class Lexer
         {
             Advance();
             AddToken(TokenType.CloseDeclare);
+        }
+        else if (Peek() == '@')
+        {
+            AddToken(TokenType.Negate);
         }
         else
         {
@@ -308,15 +315,57 @@ public class Lexer
 
         InstanceVariable();
     }
-    
+
     private void InstanceVariable()
     {
-        while (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+        if (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
         {
             Advance();
+            
+            while (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+            {
+                Advance();
+            }
         }
         
-        AddToken(TokenType.InstanceVar);
+        string identifier = _code[_start.._current];
+        
+        AddToken(TokenType.Attribute, identifier);
+    }
+
+    private void Colon()
+    {
+        if (Peek() == ':')
+        {
+            Advance();
+            AddToken(TokenType.DoubleColon);
+            _start++;
+        }
+        else
+        {
+            AddToken(TokenType.Colon);
+        }
+
+        _start++;
+
+        ObjectAccess();
+    }
+
+    private void ObjectAccess()
+    {
+        if (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+        {
+            Advance();
+            
+            while (Char.IsLetterOrDigit(Peek()) || Peek() == '_')
+            {
+                Advance();
+            }
+        }
+
+        string identifier = _code[_start.._current];
+        
+        AddToken(TokenType.ObjAccessor, identifier);
     }
 
     private void Str()
@@ -370,7 +419,7 @@ public class Lexer
         {
             Advance();
         }
-        
+
         string identifier = _code[_start.._current];
 
         AddToken(Keywords.Contains(identifier) ? Keywords.GetTokenType(identifier) : TokenType.Identifier, identifier);

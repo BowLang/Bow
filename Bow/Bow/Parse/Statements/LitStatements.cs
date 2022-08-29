@@ -1,6 +1,4 @@
-﻿using Tokenise;
-using Parse.Expressions;
-using Parse.Expressions.Literals;
+﻿using Parse.Expressions;
 
 namespace Parse.Statements;
 
@@ -22,6 +20,6 @@ public class LitStatement : Statement
     
     public override string Interpret(bool lastInShell)
     {
-        return lastInShell ? _valueExpression.Evaluate().DisplayValue : "";
+        return lastInShell ? _valueExpression.Evaluate().DisplayValue() : "";
     }
 }

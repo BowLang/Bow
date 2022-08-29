@@ -1,9 +1,7 @@
 ﻿using Errors;
 using Parse.Expressions;
 using Parse.Environment;
-using Parse.Expressions.Literals;
-
-using Microsoft.CSharp.RuntimeBinder;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Statements;
 
@@ -24,24 +22,32 @@ public class Switch : Statement
 
     public override void Interpret()
     {
-        Literal switchExpression = _switchExpression.Evaluate();
+        ObjInstance switchExpression = _switchExpression.Evaluate();
 
         int count = 0;
         bool match = false;
         bool escaped = false;
+        
         while (count < _cases.Count)
         {
             var (comparisons, statements) = _cases[count];
             
             foreach (Expression comparison in comparisons)
             {
-                Literal comparisonLiteral = comparison.Evaluate();
-                if (comparisonLiteral.Type != switchExpression.Type)
-                {
-                    throw new BowTypeError($"Cannot compare {comparisonLiteral.Type} with {switchExpression.Type} on line {_line}");
-                }
+                ObjInstance comparisonLiteral = comparison.Evaluate();
                 
-                if (match || comparisonLiteral.Value == switchExpression.Value)
+                if (!switchExpression.AcceptsType(comparisonLiteral))
+                {
+                    throw new BowTypeError(
+                        $"Cannot compare {comparisonLiteral.DisplayName()} with {switchExpression.DisplayName()} on line {_line}");
+                }
+
+                ObjInstance comparisonResult =
+                    switchExpression.ExecuteMethod("==", new List<Expression> { comparison }, _line);
+                
+                BooInstance boo = (BooInstance)comparisonResult;
+
+                if (match || boo.Value)
                 {
                     try
                     {
@@ -72,7 +78,7 @@ public class Switch : Statement
         }
     }
 
-    private void InterpretBranch(List<Statement> statements)
+    private static void InterpretBranch(List<Statement> statements)
     {
         Env.PushScope(new Env());
 

@@ -1,8 +1,7 @@
 ﻿using Errors;
-using Tokenise;
 using Parse.Environment;
 using Parse.Expressions;
-using Parse.Expressions.Literals;
+using Parse.Expressions.ObjInstances;
 
 namespace Parse.Statements;
 
@@ -25,19 +24,22 @@ public class Declaration : Statement
 
     public override void Interpret()
     {
-        Literal value = _valueExpression.Evaluate();
+        ObjInstance newValue = _valueExpression.Evaluate();
+
+        ObjectSymbol type = Env.GetObject(_type, _line);
 
         if (Env.IsVariableDefinedLocally(_name))
         {
             throw new BowSyntaxError($"Can't re-declare variable '{_name}' on line {_line}");
         }
 
-        if (_type != value.Type)
+        if (!newValue.IsAcceptedBy(type))
         {
-            throw new BowTypeError($"Can't assign {value.Type} to variable of type {_type[..3]} on line {_line}");
+            throw new BowTypeError(
+                $"Can't assign {newValue.DisplayName()} to variable of type {type.DisplayName()} on line {_line}");
         }
         
-        VariableSymbol symbol = new VariableSymbol(_name, value, _line, _isConstant);
+        VariableSymbol symbol = new VariableSymbol(_name, newValue, _line, _isConstant);
 
         Env.AddVariable(symbol);
     }
@@ -46,6 +48,6 @@ public class Declaration : Statement
     {
         Interpret();
         
-        return lastInShell ? Env.GetVariable(_name).Literal.DisplayValue : "";
+        return lastInShell ? Env.GetVariable(_name).Object.DisplayValue() : "";
     }
 }

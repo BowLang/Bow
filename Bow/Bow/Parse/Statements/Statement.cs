@@ -1,4 +1,6 @@
-﻿namespace Parse.Statements;
+﻿using Parse.Environment;
+
+namespace Parse.Statements;
 
 public class Statement
 {

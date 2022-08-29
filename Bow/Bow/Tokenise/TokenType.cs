@@ -14,6 +14,7 @@ public struct TokenType
         Star             = "STAR",
         Slash            = "SLASH",
         Dot              = "DOT",
+        Negate           = "NEGATE",
         
         Equal            = "EQUAL",
         NotEqual         = "NOT_EQUAL",
@@ -29,8 +30,6 @@ public struct TokenType
         StrLiteral       = "STRLITERAL",
         DecLiteral       = "DECLITERAL",
         BooLiteral       = "BOOLITERAL",
-        
-        NullReturn       = "NULL_RETURN",
         
         Str              = "STR",
         Dec              = "DEC",
@@ -60,7 +59,10 @@ public struct TokenType
         Pri              = "PRI",
         Stat             = "STAT",
         Meth             = "METH",
-        InstanceVar      = "INSTANCE_VAR",
+        Attribute        = "ATTRIBUTE",
+        Colon            = "COLON",
+        DoubleColon      = "DOUBLE_COLON",
+        ObjAccessor      = "OBJ_ACCESSOR",
 
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",

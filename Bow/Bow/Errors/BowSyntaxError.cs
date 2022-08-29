@@ -3,7 +3,7 @@
 [Serializable]
 public class BowSyntaxError : Exception
 {
-    public BowSyntaxError() : base() { }
+    public BowSyntaxError() { }
     public BowSyntaxError(string message) : base(message) { }
     public BowSyntaxError(string message, Exception inner) : base(message, inner) { }
     

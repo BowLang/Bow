@@ -3,7 +3,7 @@
 [Serializable]
 public class BowEOFError : Exception
 {
-    public BowEOFError() : base() { }
+    public BowEOFError() { }
     public BowEOFError(string message) : base(message) { }
     public BowEOFError(string message, Exception inner) : base(message, inner) { }
     

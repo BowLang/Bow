@@ -3,7 +3,7 @@
 [Serializable]
 public class BowRuntimeError : Exception
 {
-    public BowRuntimeError() : base() { }
+    public BowRuntimeError() { }
     public BowRuntimeError(string message) : base(message) { }
     public BowRuntimeError(string message, Exception inner) : base(message, inner) { }
     

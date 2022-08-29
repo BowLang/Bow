@@ -3,7 +3,7 @@
 [Serializable]
 public class BowNameError : Exception
 {
-    public BowNameError() : base() { }
+    public BowNameError() { }
     public BowNameError(string message) : base(message) { }
     public BowNameError(string message, Exception inner) : base(message, inner) { }
     
