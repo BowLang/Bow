@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -17,7 +17,7 @@ public class AttributeExpression : Expression
         _line = line;
     }
 
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
         /*ObjInstance target;
         
@@ -32,15 +32,15 @@ public class AttributeExpression : Expression
             target = _target.Evaluate();
         }*/
         
-        ObjInstance target = _target is null
+        Obj target = _target is null
             ? Env.CurrentInstanceObj ??
               throw new BowSyntaxError($"Cannot access attribute '{_name}' outside of an object on line {_line}")
             : _target.Evaluate();
 
-        ObjInstance? startObj = Env.CurrentInstanceObj;
+        Obj? startObj = Env.CurrentInstanceObj;
         Env.CurrentInstanceObj = target;
 
-        ObjInstance result = target.GetAttribute(_name, _line).Object;
+        Obj result = target.GetAttribute(_name, _line).Object;
         
         Env.CurrentInstanceObj = startObj;
 

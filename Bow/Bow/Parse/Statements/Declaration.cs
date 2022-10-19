@@ -1,7 +1,7 @@
 ﻿using Errors;
 using Parse.Environment;
 using Parse.Expressions;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Statements;
 
@@ -24,7 +24,7 @@ public class Declaration : Statement
 
     public override void Interpret()
     {
-        ObjInstance newValue = _valueExpression.Evaluate();
+        Obj newValue = _valueExpression.Evaluate();
 
         ObjectSymbol type = Env.GetObject(_type, _line);
 

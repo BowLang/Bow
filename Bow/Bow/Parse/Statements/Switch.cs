@@ -1,7 +1,7 @@
 ﻿using Errors;
 using Parse.Expressions;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Statements;
 
@@ -22,7 +22,7 @@ public class Switch : Statement
 
     public override void Interpret()
     {
-        ObjInstance switchExpression = _switchExpression.Evaluate();
+        Obj switchExpression = _switchExpression.Evaluate();
 
         int count = 0;
         bool match = false;
@@ -34,7 +34,7 @@ public class Switch : Statement
             
             foreach (Expression comparison in comparisons)
             {
-                ObjInstance comparisonLiteral = comparison.Evaluate();
+                Obj comparisonLiteral = comparison.Evaluate();
                 
                 if (!switchExpression.AcceptsType(comparisonLiteral))
                 {
@@ -42,7 +42,7 @@ public class Switch : Statement
                         $"Cannot compare {comparisonLiteral.DisplayName()} with {switchExpression.DisplayName()} on line {_line}");
                 }
 
-                ObjInstance comparisonResult =
+                Obj comparisonResult =
                     switchExpression.ExecuteMethod("==", new List<Expression> { comparison }, _line);
                 
                 BooInstance boo = (BooInstance)comparisonResult;

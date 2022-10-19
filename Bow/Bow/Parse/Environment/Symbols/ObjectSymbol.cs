@@ -1,4 +1,5 @@
 ﻿using Errors;
+using Parse.Expressions.Objects;
 
 namespace Parse.Environment;
 
@@ -10,6 +11,7 @@ public class ObjectSymbol
     public readonly Dictionary<string, AttributeSymbol> Attributes;
     public readonly Dictionary<string, MethodSymbol> Methods;
     public readonly ObjectSymbol? Super;
+    public readonly Obj Static;
 
     public ObjectSymbol(string name, ObjectSymbol? super, int line)
     {
@@ -17,7 +19,8 @@ public class ObjectSymbol
         _line = line;
         Attributes = new Dictionary<string, AttributeSymbol>();
         Methods = new Dictionary<string, MethodSymbol>();
-        if (super is not null) Super = super;
+        Super = super;
+        Static = new StaticObject();
     }
 
     private bool IsAttributeDefined(string name)

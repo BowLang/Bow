@@ -1,5 +1,5 @@
 ﻿using Errors;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -16,7 +16,7 @@ public class BuiltinObjectExpression : Expression
         _line = line;
     }
     
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
         return _type switch
         {

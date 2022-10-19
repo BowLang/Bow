@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Statements;
 

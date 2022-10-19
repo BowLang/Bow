@@ -1,13 +1,13 @@
-﻿using Parse.Expressions.ObjInstances;
+﻿using Parse.Expressions.Objects;
 
 namespace Errors;
 
 [Serializable]
 public class BowReturn : Exception
 {
-    public ObjInstance Object { get; }
+    public Obj Object { get; }
 
-    public BowReturn(ObjInstance obj)
+    public BowReturn(Obj obj)
     {
         Object = obj;
     }

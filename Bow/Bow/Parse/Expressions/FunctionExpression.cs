@@ -2,7 +2,7 @@
 using Errors;
 using Parse.Statements;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -19,7 +19,7 @@ public class FunctionExpression : Expression
         _line = line;
     }
     
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
         bool isBuiltin = IsBuiltinFunction(_name);
         
@@ -31,7 +31,7 @@ public class FunctionExpression : Expression
         return ExecuteMethod();
     }
 
-    private ObjInstance ExecuteMethod()
+    private Obj ExecuteMethod()
     {
         if (Env.CurrentInstanceObj is null)
         {
@@ -41,7 +41,7 @@ public class FunctionExpression : Expression
         return Env.CurrentInstanceObj.ExecuteMethod(_name, _parameters, _line);
     }
     
-    private ObjInstance ExecuteFunction(bool isBuiltin)
+    private Obj ExecuteFunction(bool isBuiltin)
     {
         if (isBuiltin)
         {
@@ -53,7 +53,7 @@ public class FunctionExpression : Expression
         return ExecuteUserFunction(function.Parameters, function.ReturnTypes, function.Statements);
     }
 
-    private ObjInstance ExecuteUserFunction(List<Tuple<string, List<string>>> expectedParameters, List<string> returnTypes,
+    private Obj ExecuteUserFunction(List<Tuple<string, List<string>>> expectedParameters, List<string> returnTypes,
         List<Statement> statements, bool isMethod = false)
     {
         string type = isMethod ? "method" : "function";
@@ -64,7 +64,7 @@ public class FunctionExpression : Expression
         
         foreach (var param in _parameters.Select((value, i) => new { i, value }))
         {
-            ObjInstance paramObj = param.value.Evaluate();
+            Obj paramObj = param.value.Evaluate();
 
             string name = expectedParameters[param.i].Item1;
             
@@ -76,7 +76,7 @@ public class FunctionExpression : Expression
             parameters.Add(name, new VariableSymbol(name, paramObj, _line, false));
         }
 
-        ObjInstance value = new NullInstance();
+        Obj value = new NullInstance();
         
         int nestLevel = Env.NestLevel;
         
@@ -116,7 +116,7 @@ public class FunctionExpression : Expression
         }
     }
     
-    private void CheckReturnTypes(ObjInstance value, List<string> types, string type)
+    private void CheckReturnTypes(Obj value, List<string> types, string type)
     {
         string titledType = type[0].ToString().ToUpper() + type[1..^1];
         
@@ -137,7 +137,7 @@ public class FunctionExpression : Expression
         }
     }
 
-    private bool InTypeList(List<string> types, ObjInstance obj)
+    private bool InTypeList(List<string> types, Obj obj)
     {
         foreach (ObjectSymbol type in StringsToObjectSymbols(types))
         {
@@ -162,7 +162,7 @@ public class FunctionExpression : Expression
         return returnTypes;
     }
 
-    private ObjInstance ExecuteBuiltinFunction()
+    private Obj ExecuteBuiltinFunction()
     {
         const BindingFlags flags = BindingFlags.InvokeMethod |
                                    BindingFlags.Public |
@@ -180,7 +180,7 @@ public class FunctionExpression : Expression
         try
         {
             Builtins.Line = _line;
-            return (ObjInstance)(func.Invoke(null, parameters) ?? new NullInstance());
+            return (Obj)(func.Invoke(null, parameters) ?? new NullInstance());
         }
         catch (TargetParameterCountException)
         {
@@ -208,7 +208,7 @@ public class Builtins
 {
     public static int Line { get; set; }
     
-    public static ObjInstance output(ObjInstance value)
+    public static Obj output(Obj value)
     {
         value = value.ExecuteMethod("to_str", new List<Expression>(), Line);
 
@@ -223,7 +223,7 @@ public class Builtins
         return new NullInstance();
     }
     
-    public static ObjInstance input(ObjInstance? message=null)
+    public static Obj input(Obj? message=null)
     {
         string str = "";
         

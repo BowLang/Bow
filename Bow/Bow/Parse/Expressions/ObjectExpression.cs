@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -17,7 +17,7 @@ public class ObjectExpression : Expression
         _line = line;
     }
 
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
         if (new[] { "str", "dec", "boo" }.Contains(_name))
         {
@@ -27,7 +27,7 @@ public class ObjectExpression : Expression
             }
         }
 
-        ObjInstance param;
+        Obj param;
 
         switch (_name)
         {

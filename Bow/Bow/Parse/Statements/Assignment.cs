@@ -1,7 +1,7 @@
 ﻿using Errors;
 using Parse.Environment;
 using Parse.Expressions;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Statements;
 
@@ -22,7 +22,7 @@ public class Assignment : Statement
 
     public override void Interpret()
     {
-        ObjInstance newValue = _valueExpression.Evaluate();
+        Obj newValue = _valueExpression.Evaluate();
 
         if (_isAttribute)
         {
@@ -34,9 +34,9 @@ public class Assignment : Statement
         }
     }
 
-    private void AssignAttribute(ObjInstance newValue)
+    private void AssignAttribute(Obj newValue)
     {
-        ObjInstance? obj = Env.CurrentInstanceObj;
+        Obj? obj = Env.CurrentInstanceObj;
 
         if (obj is null)
         {
@@ -44,8 +44,7 @@ public class Assignment : Statement
         }
         
         AttributeSymbol attribute = obj.GetAttribute(_name, _line);
-        
-        ObjInstance oldValue = attribute.Object;
+        Obj oldValue = attribute.Object;
 
         if (attribute.IsConstant && oldValue.GetType() != typeof(NullInstance))
         {
@@ -61,7 +60,7 @@ public class Assignment : Statement
         attribute.SetValue(newValue);
     }
 
-    private void AssignVariable(ObjInstance newValue)
+    private void AssignVariable(Obj newValue)
     {
         if (!Env.IsVariableDefined(_name))
         {
@@ -75,7 +74,7 @@ public class Assignment : Statement
             throw new BowSyntaxError($"Cannot assign to constant '{_name}' on line {_line}");
         }
         
-        ObjInstance oldValue = symbol.Object;
+        Obj oldValue = symbol.Object;
 
         if (!oldValue.AcceptsType(newValue))
         {

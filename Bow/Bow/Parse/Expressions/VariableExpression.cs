@@ -1,5 +1,5 @@
 ﻿using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -14,10 +14,10 @@ public class VariableExpression : Expression
         _line = line;
     }
 
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
         return Env.IsFunctionDefined(_name, _line)
             ? new FunctionExpression(_name, new(), _line).Evaluate()
-            : Env.GetVariable(_name).Object;
+            : Env.IsObjectDefined(_name, _line) ? Env.GetObject(_name, _line).Static : Env.GetVariable(_name).Object;
     }
 }

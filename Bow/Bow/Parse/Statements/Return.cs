@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Expressions;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 
 namespace Parse.Statements;
@@ -16,7 +16,7 @@ public class Return : Statement
 
     public override void Interpret()
     {
-        ObjInstance returnedValue = new NullInstance();
+        Obj returnedValue = new NullInstance();
         if (_expression is not null)
         {
             returnedValue = _expression.Evaluate();

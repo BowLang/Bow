@@ -1,11 +1,11 @@
-﻿using Parse.Expressions.ObjInstances;
+﻿using Parse.Expressions.Objects;
 
 namespace Parse.Environment;
 
 public class AttributeSymbol
 {
     public string Name { get; }
-    public ObjInstance Object { get; private set; }
+    public Obj Object { get; private set; }
     public ObjectSymbol Type { get; init; }
     public int Line { get; }
     public bool IsConstant { get; }
@@ -21,7 +21,7 @@ public class AttributeSymbol
         IsPrivate = isPrivate;
     }
 
-    public void SetValue(ObjInstance newObj)
+    public void SetValue(Obj newObj)
     {
         Object = newObj;
     }

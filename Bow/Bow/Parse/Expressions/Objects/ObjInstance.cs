@@ -1,12 +1,12 @@
 ﻿using Parse.Environment;
 
-namespace Parse.Expressions.ObjInstances;
+namespace Parse.Expressions.Objects;
 
-public class ObjInstance
+public class Obj
 {
     public ObjectSymbol? Object { get; init; }
     
-    public virtual ObjInstance ExecuteMethod(string name, List<Expression> parameters, int line)
+    public virtual Obj ExecuteMethod(string name, List<Expression> parameters, int line)
     {
         throw new NotImplementedException();
     }
@@ -26,7 +26,7 @@ public class ObjInstance
         throw new NotImplementedException();
     }
 
-    public bool AcceptsType(ObjInstance type)
+    public bool AcceptsType(Obj type)
     {
         return Object is not null && type.IsAcceptedBy(Object);
     }

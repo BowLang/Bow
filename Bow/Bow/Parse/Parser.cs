@@ -777,58 +777,34 @@ public class Parser
             {
                 expression = GetFunction(name, line);
             }
-            else if (Match(new[] { TokenType.DoubleColon }))
-            {
-                if (!Match(new[] { TokenType.ObjAccessor }))
-                {
-                    throw new BowSyntaxError($"Missing method after '::' on line {Previous().Line}");
-                }
-
-                if (Previous().Literal == "new")
-                {
-                    expression = new ObjectExpression(name, GetFunctionParameters(line), Previous().Line);
-                }
-                else
-                {
-                    Undo();
-                    Undo();
-                    expression = new VariableExpression(name, Previous().Line);
-                }
-            }
             else
             {
                 expression = new VariableExpression(name, Previous().Line);
             }
-            
 
-            if (Peek().Type is TokenType.Colon or TokenType.DoubleColon)
+            while (Peek().Type is TokenType.Colon or TokenType.DoubleColon)
             {
-                while (Peek().Type is TokenType.Colon or TokenType.DoubleColon)
+                if (Match(new[] { TokenType.Colon }))
                 {
-                    if (Match(new[] { TokenType.Colon }))
+                    if (!Match(new[] { TokenType.ObjAccessor }))
                     {
-                        if (!Match(new[] { TokenType.ObjAccessor }))
-                        {
-                            throw new BowSyntaxError(
-                                $"Expected identifier after attribute access colon on line {Previous().Line}");
-                        }
-
-                        expression = new AttributeExpression($"#{Previous().Literal}", expression, Previous().Line);
+                        throw new BowSyntaxError(
+                            $"Expected identifier after attribute access colon on line {Previous().Line}");
                     }
-                    else if (Match(new[] { TokenType.DoubleColon }))
-                    {
-                        if (!Match(new[] { TokenType.ObjAccessor }))
-                        {
-                            throw new BowSyntaxError(
-                                $"Expected identifier after method access colon on line {Previous().Line}");
-                        }
 
-                        expression = new MethodExpression(Previous().Literal, GetFunctionParameters(line), expression, 
-                            line);
-                    }
+                    expression = new AttributeExpression($"#{Previous().Literal}", expression, Previous().Line);
                 }
+                else if (Match(new[] { TokenType.DoubleColon }))
+                {
+                    if (!Match(new[] { TokenType.ObjAccessor }))
+                    {
+                        throw new BowSyntaxError(
+                            $"Expected identifier after method access colon on line {Previous().Line}");
+                    }
 
-                return expression;
+                    expression = new MethodExpression(Previous().Literal, GetFunctionParameters(line), expression, 
+                        line);
+                }
             }
 
             return expression;

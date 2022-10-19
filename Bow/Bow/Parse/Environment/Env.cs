@@ -1,6 +1,6 @@
 ﻿using Errors;
 using Parse.Expressions;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Environment;
 
@@ -8,7 +8,7 @@ public class Env
 {
     public static int NestLevel;
     public static ObjectSymbol? CurrentObj { get; set; }
-    public static ObjInstance? CurrentInstanceObj { get; set; }
+    public static Obj? CurrentInstanceObj { get; set; }
     private static readonly List<Env> Scopes = new() { new Env() };
     private readonly Dictionary<string, ObjectSymbol>   _objects;
     private readonly Dictionary<string, VariableSymbol> _variables;

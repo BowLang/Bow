@@ -1,4 +1,4 @@
-﻿using Parse.Expressions.ObjInstances;
+﻿using Parse.Expressions.Objects;
 
 namespace Parse.Expressions;
 
@@ -17,9 +17,9 @@ public class MethodExpression : Expression
         _line = line;
     }
     
-    public override ObjInstance Evaluate()
+    public override Obj Evaluate()
     {
-        ObjInstance target = _target.Evaluate();
+        Obj target = _target.Evaluate();
         
         return target.ExecuteMethod(_methodName, _arguments, _line);
     }

@@ -2,9 +2,9 @@
 using Parse.Environment;
 using Parse.Statements;
 
-namespace Parse.Expressions.ObjInstances;
+namespace Parse.Expressions.Objects;
 
-public class UserObjInstance : ObjInstance
+public class UserObjInstance : Obj
 {
     private readonly Dictionary<string, AttributeSymbol> _attributes;
     private readonly Dictionary<string, MethodSymbol> _methods;
@@ -30,17 +30,17 @@ public class UserObjInstance : ObjInstance
         return newAttributes;
     }
 
-    public override ObjInstance ExecuteMethod(string name, List<Expression> parameters, int line)
+    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
     {
         MethodSymbol method = GetMethod(name, true, line);
 
         Dictionary<string, VariableSymbol> passedParams = GetParameters(method, parameters, line);
         
         Env.PushScope(new Env(passedParams));
-        ObjInstance? startObj = Env.CurrentInstanceObj;
+        Obj? startObj = Env.CurrentInstanceObj;
         Env.CurrentInstanceObj = this;
 
-        ObjInstance returned = new NullInstance();
+        Obj returned = new NullInstance();
 
         try
         {
@@ -107,7 +107,7 @@ public class UserObjInstance : ObjInstance
         
         for (int i = 0; i < givenParameters.Count; i++)
         {
-            ObjInstance obj = givenParameters[i].Evaluate();
+            Obj obj = givenParameters[i].Evaluate();
 
             bool valid = false;
             Tuple<string, List<string>> param = method.Parameters[i];

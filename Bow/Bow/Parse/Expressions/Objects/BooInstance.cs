@@ -1,19 +1,17 @@
-﻿using System.Globalization;
-using Errors;
+﻿using Errors;
 using Parse.Environment;
 
-namespace Parse.Expressions.ObjInstances;
+namespace Parse.Expressions.Objects;
 
-public class DecInstance : ObjInstance
+public class BooInstance : Obj
 {
-    public readonly double Value;
-    private const double Tolerance = 0.00001;
+    public readonly bool Value;
     private readonly Dictionary<string, Dictionary<string, dynamic>> _attributes;
     
-    public DecInstance(string value, int line)
+    public BooInstance(string value, int line)
     {
-        Value = double.Parse(value);
-        Object = Env.GetObject("dec", line);
+        Value = bool.Parse(value);
+        Object = Env.GetObject("boo", line);
         
         _attributes = new Dictionary<string, Dictionary<string, dynamic>>
         {
@@ -21,16 +19,16 @@ public class DecInstance : ObjInstance
                 "#value", new Dictionary<string, dynamic>
                 {
                     { "value", Value },
-                    { "type", "dec" }
+                    { "type", "str" }
                 }
             }
         };
     }
     
-    public DecInstance(double value, int line)
+    public BooInstance(bool value, int line)
     {
         Value = value;
-        Object = Env.GetObject("dec", line);
+        Object = Env.GetObject("boo", line);
         
         _attributes = new Dictionary<string, Dictionary<string, dynamic>>
         {
@@ -38,73 +36,57 @@ public class DecInstance : ObjInstance
                 "#value", new Dictionary<string, dynamic>
                 {
                     { "value", Value },
-                    { "type", "dec" }
+                    { "type", "str" }
                 }
             }
         };
     }
 
-    public override ObjInstance ExecuteMethod(string name, List<Expression> parameters, int line)
+    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
     {
-        if (new[] { "-@", "to_str" }.Contains(name))
+        if (new[] { "!", "to_str" }.Contains(name))
         {
             if (parameters.Count != 0)
             {
                 throw new BowRuntimeError(
-                    $"Incorrect number of parameters provided for dec unary operator on line {line}");
+                    $"Incorrect number of parameters provided for boo unary operator on line {line}");
             }
 
             return name switch
             {
-                "-" => new DecInstance(-Value, line),
-                "to_str" => new StrInstance(Value.ToString(CultureInfo.InvariantCulture), line),
+                "!" => new BooInstance(!Value, line),
+                "to_str" => new StrInstance(Value.ToString(), line),
                 _ => throw new BowRuntimeError($"Invalid unary operator {name} on line {line}")
             };
         }
         
-        if (new[] { "+", "-", "/", "*", ">", ">=", "<", "<=", "=", "!=" }.Contains(name))
+        if (new[] { "&&", "||", "=", "!="}.Contains(name))
         {
             if (parameters.Count != 1)
             {
                 throw new BowRuntimeError(
-                    $"Incorrect number of parameters provided for dec binary operator on line {line}");
+                    $"Incorrect number of parameters provided for boo binary operator on line {line}");
             }
             
-            ObjInstance other = parameters[0].Evaluate();
+            Obj other = parameters[0].Evaluate();
 
-            if (other.GetType() != typeof(DecInstance))
+            if (other.GetType() != typeof(BooInstance))
             {
-                throw new BowTypeError($"Can't perform dec operation on two different types on line {line}");
+                throw new BowTypeError($"Can't perform boo operation on two different types on line {line}");
             }
             
-            DecInstance dec = (DecInstance)other;
+            BooInstance boo = (BooInstance)other;
 
-            if (new[] { "+", "-", "/", "*" }.Contains(name))
+            bool result = name switch
             {
-                double arithResult = name switch
-                {
-                    "+" => Value + dec.Value,
-                    "-" => Value - dec.Value,
-                    "/" => Value / dec.Value,
-                    "*" => Value * dec.Value,
-                    _ => throw new BowRuntimeError($"Invalid dec arithmetic operator {name} on line {line}")
-                };
-                
-                return new DecInstance(arithResult, line);
-            }
-
-            bool compResult = name switch
-            {
-                ">"  => Value > dec.Value,
-                ">=" => Value >= dec.Value,
-                "<"  => Value < dec.Value,
-                "<=" => Value <= dec.Value,
-                "="  => Math.Abs(Value - dec.Value) < Tolerance,
-                "!=" => Math.Abs(Value - dec.Value) < Tolerance,
-                _ => throw new BowRuntimeError($"Invalid dec comparison operator {name} on line {line}")
+                "&&" => Value && boo.Value,
+                "||" => Value || boo.Value,
+                "="  => Value == boo.Value,
+                "!=" => Value != boo.Value,
+                _ => throw new BowRuntimeError($"Unknown operator {name} on line {line}")
             };
-            
-            return new BooInstance(compResult, line);
+
+            return new BooInstance(result, line);
         }
 
         if (Object is null)
@@ -120,7 +102,7 @@ public class DecInstance : ObjInstance
         if (_attributes.ContainsKey(name))
         {
             Dictionary<string, dynamic> attr = _attributes[name];
-            AttributeSymbol attribute = new AttributeSymbol(name, Env.GetObject("dec", line), line, true, true);
+            AttributeSymbol attribute = new AttributeSymbol(name, Env.GetObject("boo", line), line, true, true);
             
             switch (attr["type"])
             {
@@ -150,7 +132,7 @@ public class DecInstance : ObjInstance
     
     public override string DisplayName()
     {
-        return "dec";
+        return "boo";
     }
     
     public override string DisplayValue()

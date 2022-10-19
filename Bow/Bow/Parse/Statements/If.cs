@@ -1,7 +1,7 @@
 ﻿using Errors;
 using Parse.Expressions;
 using Parse.Environment;
-using Parse.Expressions.ObjInstances;
+using Parse.Expressions.Objects;
 
 namespace Parse.Statements;
 
@@ -25,7 +25,7 @@ public class If : Statement
 
     public override void Interpret()
     {
-        ObjInstance condition = _ifCondition.Evaluate();
+        Obj condition = _ifCondition.Evaluate();
 
         if (!new BooInstance(true, _line).AcceptsType(condition))
         {
@@ -47,7 +47,7 @@ public class If : Statement
         
         foreach (var (altIfCondition, altIfStatements) in _altIfs)
         {
-            ObjInstance evalledAltIfCondition = altIfCondition.Evaluate();
+            Obj evalledAltIfCondition = altIfCondition.Evaluate();
 
             if (!new BooInstance(true, _line).AcceptsType(evalledAltIfCondition))
             {

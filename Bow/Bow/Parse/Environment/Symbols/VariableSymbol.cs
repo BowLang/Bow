@@ -1,15 +1,15 @@
-﻿using Parse.Expressions.ObjInstances;
+﻿using Parse.Expressions.Objects;
 
 namespace Parse.Environment;
 
 public class VariableSymbol
 {
     public string Name { get; }
-    public ObjInstance Object { get; private set; }
+    public Obj Object { get; private set; }
     public int Line { get; }
     public bool IsConstant { get; }
 
-    public VariableSymbol(string name, ObjInstance obj, int line, bool isConstant)
+    public VariableSymbol(string name, Obj obj, int line, bool isConstant)
     {
         Name = name;
         Object = obj;
@@ -17,7 +17,7 @@ public class VariableSymbol
         IsConstant = isConstant;
     }
 
-    public void SetValue(ObjInstance newValue)
+    public void SetValue(Obj newValue)
     {
         Object = newValue;
     }

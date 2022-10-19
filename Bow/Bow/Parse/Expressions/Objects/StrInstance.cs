@@ -1,34 +1,17 @@
 ﻿using Errors;
 using Parse.Environment;
 
-namespace Parse.Expressions.ObjInstances;
+namespace Parse.Expressions.Objects;
 
-public class BooInstance : ObjInstance
+public class StrInstance : Obj
 {
-    public readonly bool Value;
+    public readonly string Value;
     private readonly Dictionary<string, Dictionary<string, dynamic>> _attributes;
-    
-    public BooInstance(string value, int line)
-    {
-        Value = bool.Parse(value);
-        Object = Env.GetObject("boo", line);
-        
-        _attributes = new Dictionary<string, Dictionary<string, dynamic>>
-        {
-            { 
-                "#value", new Dictionary<string, dynamic>
-                {
-                    { "value", Value },
-                    { "type", "str" }
-                }
-            }
-        };
-    }
-    
-    public BooInstance(bool value, int line)
+
+    public StrInstance(string value, int line)
     {
         Value = value;
-        Object = Env.GetObject("boo", line);
+        Object = Env.GetObject("str", line);
         
         _attributes = new Dictionary<string, Dictionary<string, dynamic>>
         {
@@ -38,13 +21,20 @@ public class BooInstance : ObjInstance
                     { "value", Value },
                     { "type", "str" }
                 }
+            },
+            {
+                "#len", new Dictionary<string, dynamic>
+                {
+                    { "value", Value.Length },
+                    { "type", "int" }
+                }
             }
         };
     }
 
-    public override ObjInstance ExecuteMethod(string name, List<Expression> parameters, int line)
+    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
     {
-        if (new[] { "!", "to_str" }.Contains(name))
+        if (new[] { "to_str" }.Contains(name))
         {
             if (parameters.Count != 0)
             {
@@ -54,35 +44,37 @@ public class BooInstance : ObjInstance
 
             return name switch
             {
-                "!" => new BooInstance(!Value, line),
-                "to_str" => new StrInstance(Value.ToString(), line),
+                "to_str" => new StrInstance(Value, line),
                 _ => throw new BowRuntimeError($"Invalid unary operator {name} on line {line}")
             };
         }
         
-        if (new[] { "&&", "||", "=", "!="}.Contains(name))
+        if (new[] { "+", "=", "!="}.Contains(name))
         {
             if (parameters.Count != 1)
             {
                 throw new BowRuntimeError(
-                    $"Incorrect number of parameters provided for boo binary operator on line {line}");
+                    $"Incorrect number of parameters provided for str binary operator on line {line}");
             }
             
-            ObjInstance other = parameters[0].Evaluate();
+            Obj other = parameters[0].Evaluate();
 
-            if (other.GetType() != typeof(BooInstance))
+            if (other.GetType() != typeof(StrInstance))
             {
-                throw new BowTypeError($"Can't perform boo operation on two different types on line {line}");
+                throw new BowTypeError($"Can't perform str operation on two different types on line {line}");
             }
             
-            BooInstance boo = (BooInstance)other;
+            StrInstance str = (StrInstance)other;
+
+            if (name == "+")
+            {
+                return new StrInstance(Value + str.Value, line);
+            }
 
             bool result = name switch
             {
-                "&&" => Value && boo.Value,
-                "||" => Value || boo.Value,
-                "="  => Value == boo.Value,
-                "!=" => Value != boo.Value,
+                "="  => Value == str.Value,
+                "!=" => Value != str.Value,
                 _ => throw new BowRuntimeError($"Unknown operator {name} on line {line}")
             };
 
@@ -102,7 +94,7 @@ public class BooInstance : ObjInstance
         if (_attributes.ContainsKey(name))
         {
             Dictionary<string, dynamic> attr = _attributes[name];
-            AttributeSymbol attribute = new AttributeSymbol(name, Env.GetObject("boo", line), line, true, true);
+            AttributeSymbol attribute = new AttributeSymbol(name, Env.GetObject("str", line), line, true, true);
             
             switch (attr["type"])
             {
@@ -126,17 +118,17 @@ public class BooInstance : ObjInstance
         {
             throw new BowRuntimeError($"DecInstance Object is null on line {line}");
         }
-        
-        return new UserObjInstance(Object, new List<Expression>(), line).GetAttribute(name, line);
+
+        throw new BowNameError($"Unknown str attribute {name} on line {line}");
     }
     
     public override string DisplayName()
     {
-        return "boo";
+        return "str";
     }
     
     public override string DisplayValue()
     {
-        return $"{Value}";
+        return $"\"{Value}\"";
     }
 }
