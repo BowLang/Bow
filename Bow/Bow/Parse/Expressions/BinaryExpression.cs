@@ -19,6 +19,6 @@ public class BinaryExpression : Expression
 
     public override Obj Evaluate()
     {
-        return _left.Evaluate().ExecuteMethod(_operator, new List<Expression> { _right }, _line);
+        return _left.Evaluate().ExecuteMethod(_operator, new List<Expression> { _right }, true, _line);
     } 
 }

@@ -38,7 +38,7 @@ public class FunctionExpression : Expression
             throw new BowNameError($"Could not find function '{_name}' on line {_line}");
         }
         
-        return Env.CurrentInstanceObj.ExecuteMethod(_name, _parameters, _line);
+        return Env.CurrentInstanceObj.ExecuteMethod(_name, _parameters, false, _line);
     }
     
     private Obj ExecuteFunction(bool isBuiltin)
@@ -210,7 +210,7 @@ public class Builtins
     
     public static Obj output(Obj value)
     {
-        value = value.ExecuteMethod("to_str", new List<Expression>(), Line);
+        value = value.ExecuteMethod("to_str", new List<Expression>(), true, Line);
 
         if (value.GetType() != typeof(StrInstance))
         {
@@ -229,7 +229,7 @@ public class Builtins
         
         if (message is not null)
         {
-            message = message.ExecuteMethod("to_str", new List<Expression>(), Line);
+            message = message.ExecuteMethod("to_str", new List<Expression>(), true, Line);
 
             if (message.GetType() != typeof(StrInstance))
             {

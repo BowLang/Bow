@@ -1,38 +1,23 @@
-﻿using Errors;
+using Errors;
 using Parse.Environment;
 using Parse.Statements;
 
-namespace Parse.Expressions.Objects;
+namespace Parse.Expressions.Objects.UserObjects;
 
-public class UserObjInstance : Obj
+public class UserObject : Obj
 {
-    private readonly Dictionary<string, AttributeSymbol> _attributes;
-    private readonly Dictionary<string, MethodSymbol> _methods;
-
-    public UserObjInstance(ObjectSymbol passedObject, List<Expression> parameters, int line)
-    {
-        Object = passedObject;
-        _methods = passedObject.Methods;
-        _attributes = CopyAttributes(passedObject.Attributes);
-        
-        ExecuteMethod("new", parameters, line);
-    }
+    protected readonly Dictionary<string, AttributeSymbol> Attributes;
+    protected readonly Dictionary<string, MethodSymbol> Methods;
     
-    private Dictionary<string, AttributeSymbol> CopyAttributes(Dictionary<string, AttributeSymbol> attributes)
+    public UserObject(Dictionary<string, AttributeSymbol> attributes, Dictionary<string, MethodSymbol> methods)
     {
-        Dictionary<string, AttributeSymbol> newAttributes = new Dictionary<string, AttributeSymbol>();
-        
-        foreach (var attribute in attributes)
-        {
-            newAttributes.Add(attribute.Key, attribute.Value.Copy());
-        }
-        
-        return newAttributes;
+        Attributes = attributes;
+        Methods = methods;
     }
 
-    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
+    protected Obj RunMethod(string name, List<Expression> parameters, bool fromPublic, int line)
     {
-        MethodSymbol method = GetMethod(name, true, line);
+        MethodSymbol method = GetMethod(name, fromPublic, line);
 
         Dictionary<string, VariableSymbol> passedParams = GetParameters(method, parameters, line);
         
@@ -65,16 +50,31 @@ public class UserObjInstance : Obj
         return returned;
     }
     
-    public override AttributeSymbol GetAttribute(string name, int line)
+    public override AttributeSymbol GetAttribute(string name, bool fromPublic, int line)
     {
-        if (!_attributes.ContainsKey(name))
+        if (Object is null)
+        {
+            throw new BowRuntimeError($"Object is null on line {line}");
+        }
+        
+        StaticObject staticObj = Object.Static;
+
+        AttributeSymbol attr;
+
+        if (Attributes.ContainsKey(name))
+        {
+            attr = Attributes[name];
+        }
+        else if (staticObj.Attributes.ContainsKey(name))
+        {
+            attr = staticObj.Attributes[name];
+        }
+        else
         {
             throw new BowNameError($"{Object!.Name} has no attribute '{name}' on line {line}");
         }
 
-        AttributeSymbol attr = _attributes[name];
-
-        if (Env.CurrentInstanceObj != this && attr.IsPrivate)
+        if (fromPublic && attr.IsPrivate)
         {
             throw new BowNameError($"{Object!.Name} has no public attribute '{name}' on line {line}");
         }
@@ -84,16 +84,24 @@ public class UserObjInstance : Obj
 
     private MethodSymbol GetMethod(string name, bool fromPublic, int line)
     {
-        if (!_methods.ContainsKey(name))
+        MethodSymbol symbol;
+        
+        if (Methods.ContainsKey(name))
         {
-            throw new BowNameError($"{Object!.Name} has no method '{name}' on line {line}");
+            symbol = Methods[name];
         }
-
-        MethodSymbol symbol = _methods[name];
+        else if (Object is not null && Object.IsStaticMethodDefined(name))
+        {
+            symbol = Object.Static.GetMethod(name, line);
+        }
+        else
+        {
+            throw new BowNameError($"{DisplayName()} has no method '{name}' on line {line}");
+        }
 
         if (fromPublic && symbol.IsPrivate)
         {
-            throw new BowNameError($"{Object!.Name} has no public method '{name}' on line {line}");
+            throw new BowNameError($"{DisplayName()} has no public method '{name}' on line {line}");
         }
 
         return symbol;

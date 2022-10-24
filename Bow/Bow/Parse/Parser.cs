@@ -583,6 +583,14 @@ public class Parser
         }
 
         string name = Previous().Literal;
+
+        return isStatic
+            ? StaticAttributeDeclarationStatement(name, isPrivate)
+            : InstanceAttributeDeclarationStatement(name, isPrivate);
+    }
+    
+    private Statement InstanceAttributeDeclarationStatement(string name, bool isPrivate)
+    {
         bool isConstant;
 
         if (Match(new[] { TokenType.Var }))
@@ -600,7 +608,41 @@ public class Parser
 
         string type = GetType(Previous().Line);
 
-        return new AttributeDeclaration(isPrivate, name, type, isConstant, isStatic, Previous().Line);
+        return new AttributeDeclaration(isPrivate, name, type, isConstant, false, Previous().Line);
+    }
+    
+    private Statement StaticAttributeDeclarationStatement(string name, bool isPrivate)
+    {
+        if (!Match(new[] { TokenType.OpenDeclare }))
+        {
+            throw new BowSyntaxError($"Static attribute missing default value assignment on line {Previous().Line}");
+        }
+        
+        bool isConstant;
+
+        if (Match(new[] { TokenType.Var }))
+        {
+            isConstant = false;
+        }
+        else if (Match(new[] { TokenType.Con }))
+        {
+            isConstant = true;
+        }
+        else
+        {
+            throw new BowSyntaxError($"Missing var/con on line {Peek().Line}");
+        }
+        
+        string type = GetType(Previous().Line);
+        
+        if (!Match(new[] { TokenType.CloseDeclare }))
+        {
+            throw new BowSyntaxError($"Static attribute declaration arrow missing tail on line {Previous().Line}");
+        }
+        
+        Expression value = GetExpression(Previous().Line);
+
+        return new AttributeDeclaration(isPrivate, name, type, isConstant, true, Previous().Line, value);
     }
 
     private Statement LiteralStatement(int line)

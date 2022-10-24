@@ -4,14 +4,19 @@ namespace Parse.Expressions.Objects;
 
 public class Obj
 {
-    public ObjectSymbol? Object { get; init; }
+    public ObjectSymbol? Object { get; protected init; }
     
-    public virtual Obj ExecuteMethod(string name, List<Expression> parameters, int line)
+    public virtual Obj ExecuteMethod(string name, List<Expression> parameters, bool fromPublic, int line)
     {
         throw new NotImplementedException();
     }
     
-    public virtual AttributeSymbol GetAttribute(string name, int line)
+    public virtual AttributeSymbol GetAttribute(string name, bool fromPublic, int line)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public virtual MethodSymbol GetMethod(string name, int line)
     {
         throw new NotImplementedException();
     }
@@ -24,7 +29,7 @@ public class Obj
     public virtual string DisplayValue()
     {
         throw new NotImplementedException();
-    }
+    } 
 
     public bool AcceptsType(Obj type)
     {

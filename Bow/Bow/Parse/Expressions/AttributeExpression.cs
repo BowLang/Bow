@@ -19,19 +19,6 @@ public class AttributeExpression : Expression
 
     public override Obj Evaluate()
     {
-        /*ObjInstance target;
-        
-        if (_target is null)
-        {
-            target = Env.CurrentInstanceObj ??
-                     throw new BowSyntaxError(
-                         $"Cannot access attribute '{_name}' outside of an object on line {_line}");
-        }
-        else
-        {
-            target = _target.Evaluate();
-        }*/
-        
         Obj target = _target is null
             ? Env.CurrentInstanceObj ??
               throw new BowSyntaxError($"Cannot access attribute '{_name}' outside of an object on line {_line}")
@@ -40,7 +27,7 @@ public class AttributeExpression : Expression
         Obj? startObj = Env.CurrentInstanceObj;
         Env.CurrentInstanceObj = target;
 
-        Obj result = target.GetAttribute(_name, _line).Object;
+        Obj result = target.GetAttribute(_name, _target is not null, _line).Object;
         
         Env.CurrentInstanceObj = startObj;
 

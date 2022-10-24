@@ -43,7 +43,7 @@ public class Switch : Statement
                 }
 
                 Obj comparisonResult =
-                    switchExpression.ExecuteMethod("==", new List<Expression> { comparison }, _line);
+                    switchExpression.ExecuteMethod("=", new List<Expression> { comparison }, true, _line);
                 
                 BooInstance boo = (BooInstance)comparisonResult;
 

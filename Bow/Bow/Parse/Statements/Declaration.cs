@@ -48,6 +48,6 @@ public class Declaration : Statement
     {
         Interpret();
         
-        return lastInShell ? Env.GetVariable(_name).Object.DisplayValue() : "";
+        return lastInShell ? Env.GetVariable(_name, _line).Object.DisplayValue() : "";
     }
 }

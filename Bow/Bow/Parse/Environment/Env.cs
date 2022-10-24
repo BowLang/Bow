@@ -1,6 +1,7 @@
 ﻿using Errors;
 using Parse.Expressions;
 using Parse.Expressions.Objects;
+using Parse.Expressions.Objects.UserObjects;
 
 namespace Parse.Environment;
 
@@ -63,7 +64,7 @@ public class Env
         }
     }
 
-    public static VariableSymbol GetVariable(string name)
+    public static VariableSymbol GetVariable(string name, int line)
     {
         foreach (Env scope in Scopes)
         {
@@ -73,14 +74,14 @@ public class Env
             }
         }
         
-        throw new BowNameError($"Variable '{name}' not found");
+        throw new BowNameError($"Variable '{name}' not found on line {line}");
     }
     
     public static bool IsVariableDefined(string name)
     {
         try
         {
-            GetVariable(name);
+            GetVariable(name, 0);
             return true;
         }
         catch (BowNameError)
@@ -149,6 +150,13 @@ public class Env
         }
     }
 
+    public static bool IsMethodDefined(string name)
+    {
+        return CurrentInstanceObj?.Object != null &&
+               (CurrentInstanceObj.Object.IsStaticMethodDefined(name) ||
+                CurrentInstanceObj.Object.Methods.ContainsKey(name));
+    }
+
     private static void OutputFunctions()
     {
         Console.WriteLine("\nFunctions:");
@@ -197,59 +205,61 @@ public class Env
         }
     }
 
-    public static UserObjInstance InstanciateUserObject(ObjectSymbol symbol, List<Expression> parameters, int line)
-    {
-        return new UserObjInstance(symbol, parameters, line);
-    }
-
     private static void OutputObjects()
     {
-        //Dictionary<string, Dictionary<string, AttributeSymbol>> staticAttributes = ObjectSymbol.StaticAttributes;
-        //Dictionary<string, Dictionary<string, MethodSymbol>> staticMethods = ObjectSymbol.StaticMethods;
-        
         Console.WriteLine("\nObjects:");
         foreach (Env scope in Scopes)
         {
             foreach (KeyValuePair<string, ObjectSymbol> pair in scope._objects)
             {
-                if (pair.Value.Attributes.Count != 0)
+                string name = pair.Key;
+                ObjectSymbol obj = pair.Value; 
+                
+                Dictionary<string, AttributeSymbol> staticAttributes = obj.StaticAttributes;
+                Dictionary<string, MethodSymbol> staticMethods = obj.StaticMethods;
+
+                Console.WriteLine($"  {name}:");
+                
+                if (obj.Attributes.Count != 0)
                 {
-                    Console.WriteLine($"  {pair.Key}:\n    Attributes:");
-                    foreach (KeyValuePair<string, AttributeSymbol> attribute in pair.Value.Attributes)
+                    Console.WriteLine("    Attributes:");
+                    foreach (KeyValuePair<string, AttributeSymbol> attribute in obj.Attributes)
                     {
                         string visibility = attribute.Value.IsPrivate ? "private" : "public";
                         Console.WriteLine($"      {visibility} {attribute.Key}");
                     }
                 }
                 
-                /*if (staticAttributes[pair.Key].Keys.Count != 0)
+                if (staticAttributes.Keys.Count != 0)
                 {
-                    Console.WriteLine($"{pair.Key}:\n    Static Attributes:");
-                    foreach (KeyValuePair<string, AttributeSymbol> attribute in staticAttributes[pair.Key])
+                    Console.WriteLine("\n    Static Attributes:");
+                    foreach (KeyValuePair<string, AttributeSymbol> attribute in staticAttributes)
                     {
+                        string visibility = attribute.Value.IsPrivate ? "Private" : "Public";
                         Console.WriteLine(
-                            $"      {attribute.Value.Visibility} {attribute.Key} = {attribute.Value.Literal.DisplayValue}");
+                            $"      {visibility} {attribute.Key} = {attribute.Value.Object.DisplayValue()}");
                     }
-                }*/
+                }
 
-                if (pair.Value.Methods.Count != 0)
+                if (obj.Methods.Count != 0)
                 {
                     Console.WriteLine("\n    Methods:");
-                    foreach (KeyValuePair<string, MethodSymbol> method in pair.Value.Methods)
+                    foreach (KeyValuePair<string, MethodSymbol> method in obj.Methods)
                     {
-                        string visibility = method.Value.IsPrivate ? "private" : "public";
+                        string visibility = method.Value.IsPrivate ? "Private" : "Public";
                         Console.WriteLine($"      {visibility} {method.Key}");
                     }
                 }
                 
-                /*if (staticMethods[pair.Key].Keys.Count != 0)
+                if (staticMethods.Keys.Count != 0)
                 {
                     Console.WriteLine("\n    Static Methods:");
-                    foreach (KeyValuePair<string, MethodSymbol> method in staticMethods[pair.Key])
+                    foreach (KeyValuePair<string, MethodSymbol> method in staticMethods)
                     {
-                        Console.WriteLine($"      {method.Value.Visibility} {method.Key}");
+                        string visibility = method.Value.IsPrivate ? "Private" : "Public";
+                        Console.WriteLine($"      {visibility} {method.Key}");
                     }
-                }*/
+                }
             }
         }
     }

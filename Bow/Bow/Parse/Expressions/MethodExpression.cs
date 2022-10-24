@@ -21,6 +21,6 @@ public class MethodExpression : Expression
     {
         Obj target = _target.Evaluate();
         
-        return target.ExecuteMethod(_methodName, _arguments, _line);
+        return target.ExecuteMethod(_methodName, _arguments, true, _line);
     }
 }

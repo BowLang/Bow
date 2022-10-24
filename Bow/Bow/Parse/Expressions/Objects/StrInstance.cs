@@ -1,5 +1,6 @@
 ﻿using Errors;
 using Parse.Environment;
+using Parse.Expressions.Objects.UserObjects;
 
 namespace Parse.Expressions.Objects;
 
@@ -32,19 +33,20 @@ public class StrInstance : Obj
         };
     }
 
-    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
+    public override Obj ExecuteMethod(string name, List<Expression> parameters, bool fromPublic, int line)
     {
-        if (new[] { "to_str" }.Contains(name))
+        if (new[] { "to_str", "to_dec" }.Contains(name))
         {
             if (parameters.Count != 0)
             {
                 throw new BowRuntimeError(
-                    $"Incorrect number of parameters provided for boo unary operator on line {line}");
+                    $"Incorrect number of parameters provided for str unary operator on line {line}");
             }
 
             return name switch
             {
-                "to_str" => new StrInstance(Value, line),
+                "to_str" => this,
+                "to_dec" => new DecInstance(Value, line),
                 _ => throw new BowRuntimeError($"Invalid unary operator {name} on line {line}")
             };
         }
@@ -85,11 +87,12 @@ public class StrInstance : Obj
         {
             throw new BowRuntimeError($"DecInstance Object is null on line {line}");
         }
-        
-        return new UserObjInstance(Object, new List<Expression>(), line).ExecuteMethod(name, parameters, line);
+
+        return new UserObjInstance(Object, new List<Expression>(), line).ExecuteMethod(name, parameters, fromPublic,
+            line);
     }
 
-    public override AttributeSymbol GetAttribute(string name, int line)
+    public override AttributeSymbol GetAttribute(string name, bool fromPublic, int line)
     {
         if (_attributes.ContainsKey(name))
         {

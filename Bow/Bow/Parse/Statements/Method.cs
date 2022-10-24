@@ -37,13 +37,13 @@ public class Method : Statement
         MethodSymbol symbol = new MethodSymbol(_isPrivate, _name, _parameters, _returnTypes,
             _statements, _line);
 
-        /*if (_isStatic)
+        if (_isStatic)
         {
             obj.AddStaticMethod(symbol);
         }
         else
-        {*/
+        {
             obj.AddMethod(symbol);
-        //}
+        }
     }
 }

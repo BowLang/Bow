@@ -43,7 +43,7 @@ public class Assignment : Statement
             throw new BowSyntaxError($"Cannot access attribute {_name} outside of an object on line {_line}");
         }
         
-        AttributeSymbol attribute = obj.GetAttribute(_name, _line);
+        AttributeSymbol attribute = obj.GetAttribute(_name, false, _line);
         Obj oldValue = attribute.Object;
 
         if (attribute.IsConstant && oldValue.GetType() != typeof(NullInstance))
@@ -67,7 +67,7 @@ public class Assignment : Statement
             throw new BowSyntaxError($"Unknown variable '{_name}' on line {_line}");
         }
         
-        VariableSymbol symbol = Env.GetVariable(_name);
+        VariableSymbol symbol = Env.GetVariable(_name, _line);
         
         if (symbol.IsConstant)
         {
@@ -89,6 +89,6 @@ public class Assignment : Statement
     {
         Interpret();
         
-        return lastInShell ? Env.GetVariable(_name).Object.DisplayValue() : "";
+        return lastInShell ? Env.GetVariable(_name, _line).Object.DisplayValue() : "";
     }
 }

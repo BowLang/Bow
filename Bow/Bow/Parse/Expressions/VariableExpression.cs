@@ -16,8 +16,18 @@ public class VariableExpression : Expression
 
     public override Obj Evaluate()
     {
-        return Env.IsFunctionDefined(_name, _line)
-            ? new FunctionExpression(_name, new(), _line).Evaluate()
-            : Env.IsObjectDefined(_name, _line) ? Env.GetObject(_name, _line).Static : Env.GetVariable(_name).Object;
+        if (Env.IsFunctionDefined(_name, _line))
+        {
+            return new FunctionExpression(_name, new List<Expression>(), _line).Evaluate();
+        }
+
+        if (Env.IsObjectDefined(_name, _line))
+        {
+            return Env.GetObject(_name, _line).Static;
+        }
+
+        return Env.IsMethodDefined(_name)
+            ? Env.CurrentInstanceObj!.ExecuteMethod(_name, new List<Expression>(), false, _line)
+            : Env.GetVariable(_name, _line).Object;
     }
 }

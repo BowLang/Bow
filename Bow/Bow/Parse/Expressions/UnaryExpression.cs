@@ -17,6 +17,6 @@ public class UnaryExpression : Expression
 
     public override Obj Evaluate()
     {
-        return _right.Evaluate().ExecuteMethod(_operator, new List<Expression>(), _line);
+        return _right.Evaluate().ExecuteMethod(_operator, new List<Expression>(), true, _line);
     }
 }

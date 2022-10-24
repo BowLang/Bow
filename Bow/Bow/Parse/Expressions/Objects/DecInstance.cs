@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Errors;
 using Parse.Environment;
+using Parse.Expressions.Objects.UserObjects;
 
 namespace Parse.Expressions.Objects;
 
@@ -44,7 +45,7 @@ public class DecInstance : Obj
         };
     }
 
-    public override Obj ExecuteMethod(string name, List<Expression> parameters, int line)
+    public override Obj ExecuteMethod(string name, List<Expression> parameters, bool fromPublic, int line)
     {
         if (new[] { "-@", "to_str" }.Contains(name))
         {
@@ -111,11 +112,12 @@ public class DecInstance : Obj
         {
             throw new BowRuntimeError($"DecInstance Object is null on line {line}");
         }
-        
-        return new UserObjInstance(Object, new List<Expression>(), line).ExecuteMethod(name, parameters, line);
+
+        return new UserObjInstance(Object, new List<Expression>(), line).ExecuteMethod(name, parameters, fromPublic,
+            line);
     }
 
-    public override AttributeSymbol GetAttribute(string name, int line)
+    public override AttributeSymbol GetAttribute(string name, bool fromPublic, int line)
     {
         if (_attributes.ContainsKey(name))
         {
@@ -145,7 +147,7 @@ public class DecInstance : Obj
             throw new BowRuntimeError($"DecInstance Object is null on line {line}");
         }
         
-        return new UserObjInstance(Object, new List<Expression>(), line).GetAttribute(name, line);
+        return new UserObjInstance(Object, new List<Expression>(), line).GetAttribute(name, fromPublic, line);
     }
     
     public override string DisplayName()
