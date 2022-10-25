@@ -651,7 +651,33 @@ public class Parser
 
         Expression valueExpression = GetExpression(line);
 
-        return new LitStatement(valueExpression, line);
+        if (Peek().Type != TokenType.Assign)
+        {
+            return new LitStatement(valueExpression, line);
+        }
+
+        if (Previous().Type != TokenType.ObjAccessor)
+        {
+            throw new BowSyntaxError($"Unexpected assignment arrow on line {line}");
+        }
+
+        string attrName = $"#{Previous().Literal}";
+
+    Undo();
+
+        if (Previous().Type == TokenType.DoubleColon)
+        {
+            throw new BowSyntaxError($"Cannot assign to a method on line {line}");
+        }
+
+        Advance();
+        Advance();
+
+        AttributeExpression attr = (AttributeExpression)valueExpression;
+        
+        Expression value = GetExpression(line);
+
+        return new PublicAttributeAssignment(attr, attrName, value, line);
     }
 
     // Expressions
