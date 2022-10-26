@@ -63,6 +63,7 @@ public struct TokenType
         Colon            = "COLON",
         DoubleColon      = "DOUBLE_COLON",
         ObjAccessor      = "OBJ_ACCESSOR",
+        Inherits         = "INHERITS",
 
         OpenBlock        = "OPEN_BLOCK",
         CloseBlock       = "CLOSE_BLOCK",

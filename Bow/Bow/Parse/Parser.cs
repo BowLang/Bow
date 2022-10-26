@@ -527,6 +527,18 @@ public class Parser
 
         string name = Previous().Literal;
 
+        string? super = null;
+
+        if (Match(new[] { TokenType.OpenDeclare }))
+        {
+            if (!Match(new[] { TokenType.Identifier, TokenType.Str, TokenType.Dec, TokenType.Boo }))
+            {
+                throw new BowSyntaxError($"Missing object name to inherit from on line {Previous().Line}");
+            }
+
+            super = Previous().Literal;
+        }
+
         if (!Match(new[] { TokenType.OpenBlock }))
         {
             throw new BowSyntaxError($"Missing '==>' on line {Peek().Line}");
@@ -534,7 +546,7 @@ public class Parser
 
         List<Statement> statements = GetStatementBlock(new[] { TokenType.CloseBlock });
         
-        return new Statements.Object(name, statements, Previous().Line);
+        return new Statements.Object(name, statements, super, Previous().Line);
     }
 
     private Statement ObjMethOrAttrDeclarationStatement()

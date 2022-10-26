@@ -215,8 +215,8 @@ public class Env
                 string name = pair.Key;
                 ObjectSymbol obj = pair.Value; 
                 
-                Dictionary<string, AttributeSymbol> staticAttributes = obj.StaticAttributes;
-                Dictionary<string, MethodSymbol> staticMethods = obj.StaticMethods;
+                Dictionary<string, AttributeSymbol> staticAttributes = obj.Static.GetAttributes();
+                Dictionary<string, MethodSymbol> staticMethods = obj.Static.GetMethods();
 
                 Console.WriteLine($"  {name}:");
                 

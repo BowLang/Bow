@@ -35,9 +35,10 @@ public class AttributeDeclaration : Statement
             throw new BowSyntaxError($"Cannot declare attribute {_name} outside of an object on line {_line}");
         }
 
-        if (obj.IsAttributeDefined(_name))
+        if ((!_isStatic && obj.IsAttributeDefined(_name)) || (_isStatic && obj.IsStaticAttributeDefined(_name)))
         {
-            throw new BowNameError($"{obj.DisplayName()} already has an attribute named {_name} on line {_line}");
+            string msg = _isStatic ? " static " : "n ";
+            throw new BowNameError($"{obj.DisplayName()} already has a{msg} attribute named {_name} on line {_line}");
         }
 
         AttributeSymbol symbol =

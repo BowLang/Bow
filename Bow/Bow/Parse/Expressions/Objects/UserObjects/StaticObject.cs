@@ -13,9 +13,14 @@ public class StaticObject : UserObject
         _symbol = symbol;
     }
 
+    public bool IsAttributeDefined(string name)
+    {
+        return Attributes.ContainsKey(name);
+    }
+
     public override AttributeSymbol GetAttribute(string name, bool fromPublic, int line)
     {
-        if (Attributes.ContainsKey(name))
+        if (IsAttributeDefined(name))
         {
             AttributeSymbol attr = Attributes[name];
             
@@ -28,6 +33,21 @@ public class StaticObject : UserObject
         }
 
         throw new BowNameError($"{DisplayName()} does not have static attribute '{name}' on line {line}");
+    }
+
+    public Dictionary<string, AttributeSymbol> GetAttributes()
+    {
+        return Attributes;
+    }
+
+    public void AddAttribute(string name, AttributeSymbol attr)
+    {
+        Attributes[name] = attr;
+    }
+    
+    public bool IsMethodDefined(string name)
+    {
+        return Methods.ContainsKey(name);
     }
 
     public override MethodSymbol GetMethod(string name, int line)
@@ -53,6 +73,16 @@ public class StaticObject : UserObject
         }
         
         return RunMethod(name, parameters, fromPublic, line);
+    }
+
+    public Dictionary<string, MethodSymbol> GetMethods()
+    {
+        return Methods;
+    }
+    
+    public void AddMethod(string name, MethodSymbol method)
+    {
+        Methods[name] = method;
     }
 
     public override string DisplayName()

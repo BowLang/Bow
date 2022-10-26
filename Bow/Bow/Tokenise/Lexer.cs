@@ -364,8 +364,11 @@ public class Lexer
         }
 
         string identifier = _code[_start.._current];
-        
-        AddToken(TokenType.ObjAccessor, identifier);
+
+        if (identifier != "")
+        {
+            AddToken(TokenType.ObjAccessor, identifier);
+        }
     }
 
     private void Str()
